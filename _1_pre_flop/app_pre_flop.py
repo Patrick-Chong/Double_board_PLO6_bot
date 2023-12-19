@@ -1,0 +1,186 @@
+import cv2
+import sys
+import pyautogui
+from PIL import Image
+import pytesseract
+import imutils
+from PIL import ImageFilter
+
+
+def read_white_text_on_image(image_path, ss):
+		# Grayscale, Gaussian blur, Otsu's threshold
+		image = cv2.imread(image_path)
+		gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+		blur = cv2.GaussianBlur(gray, (3,3), 0)
+		thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+
+		# Morph open to remove noise and invert image
+		kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+		opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=1)
+		invert = 255 - opening
+
+		# Perform text extraction
+		image_string_detected = pytesseract.image_to_string(invert, lang='eng', config='--psm 6')
+
+		if not image_string_detected:
+			# verify it was Checked by scanning the button; if it is a blue background it means it is a check.
+
+			# crop the right side of the image so none of the white 'check' is in the picutre, then detect blue colour
+			im = Image.open(image_path)
+			cropped_image_for_blue = im.crop((120, 8, 200, 200))
+
+			pixels = list(ss.getdata())
+			total_pixels = len(pixels)
+			num_of_blue_pixel = 0
+			for pixel in pixels:
+				R,G,B,C = pixel
+
+				if B > 110:
+					num_of_blue_pixel += 1
+
+			if num_of_blue_pixel >= 0.8*total_pixels:
+				return 0
+			else:
+				print('no number detected on button and not enough blue on button detected')
+				breakpoint()
+
+		else:
+			# number_on_button looks something like Call 1:64 or Call 0.40 or Call'2:24 or Call'13.44
+			# gather all the numbers into a string
+			bet_amount = ''
+			for num in image_string_detected:
+				try:
+					curr_num = int(num)
+					bet_amount = bet_amount + f'{curr_num}'
+				except:
+					pass
+
+			# add decimal point to three spaces from the right
+			bet_amount = bet_amount[:len(bet_amount)-2] + '.' + bet_amount[len(bet_amount)-2:]
+			try:
+				final_bet_amount = float(bet_amount)
+				return final_bet_amount
+			except:
+				print(f'bet amount looks like {bet_amount}')
+				breakpoint()
+
+def scan_call_button_to_see_bet_amount():
+	"""
+	This function simply scans my 'call' button at the bottom of the screen, which shows the
+	largest bet amount that I need to call to continue the hand.
+
+	(R)!!! Two things to note:
+	1) The detector cannot detect 'checks', because of the blur background of the button.
+	so when it is my turn and I want to see if it has been 'checked' - do two things 1) the detector is ''
+	and 2) scan a bit of the background of the button and check that it is blue.
+
+	2) Otherwise if there is an amount to call the background of the button is green and it detects fine.
+	"""
+	# bet size on my button
+	ss = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/largest_bet_size_my_button.png", region=(889, 1607, 149, 41))
+
+	# image = Image.open(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/largest_bet_size_my_button.png")
+	# image.show()
+
+	image_path = f"{sys.path[0]}/photo_dump/screenshots_of_stacks/largest_bet_size_my_button.png"
+	final_bet_amount = read_white_text_on_image(image_path, ss)
+	print(f'bet to call detected is:{final_bet_amount}')
+
+	return final_bet_amount
+
+
+class RunPreFlop:
+
+	def __init__(self, my_position, num_list, suit_list, big_blind, stack_tracker):
+
+		self.my_position = my_position
+		self.num_list = num_list
+		self.suit_list = suit_list
+		self.big_blind = big_blind
+		self.stack_tracker = stack_tracker
+
+		self.pre_flop_bet_amount = scan_call_button_to_see_bet_amount()
+
+	def limped_or_3_bet_to_me_pre_flop(self):
+		"""
+		This function tells us whether it has been limped to us or has been three_bet behind or more.
+
+		The way to calculate is to scan my button and see what the amount is to call.
+
+		Then there is a running 'pot' amount, and it includes the bet I am facing.
+		So if you subtract the amount I need to call from the running bet, you get a good idea of whether it's been
+		bet, 3-bet or more.
+
+		Because before when I just
+		"""
+		folded_or_empty = ('Fold', 'Empty')
+
+		if self.pre_flop_bet_amount <= self.big_blind:
+			return 'limped'
+
+		elif self.big_blind < self.pre_flop_bet_amount <= 4 * self.big_blind:
+			return 'bet'
+
+		elif 4 * self.big_blind < self.pre_flop_bet_amount <= 10 * self.big_blind:
+			return 'three_bet'
+
+		elif self.pre_flop_bet_amount > 10 * self.big_blind:
+			return 'four_bet'
+
+		else:
+			print(f"Issue with limped bet or three bet detection, pre_flop bet size detected is {self.pre_flop_bet_amount}")
+			breakpoint()
+
+	def action_pre_flop(self, limped_or_3_bet_to_me_pre_flop):
+		"""
+		My play strategy will be as follows:
+
+		- If I am in position 5 or 6:
+			- premium hand: I'll raise a bet, call a 3-bet
+		- If I am in any other position:
+			- I'll only play premium hands, and will call them
+			- The exception is double suited aces, where I will bet.
+
+		(When deciding what hands to play, I've just setup certain hands and will only play those,
+		no distinction made between 'premium' and 'call' hands - there's no need).
+		"""
+
+		premium_positions = (5, 6)
+
+		if self.my_position in premium_positions:
+			if limped_or_3_bet_to_me_pre_flop == 'limped':
+				print('it was checked to me so I bet')
+				return 'BET'
+			# leaving the below in, I want to 3-bet sometimes.
+			# elif limped_or_3_bet_to_me_pre_flop == 'bet':
+			# 	print('it was bet into me so I call')
+			# 	return 'CALL', 'bet_into_me_I_call', 'bet_into_me_I_call'
+
+		if self.my_position == 6:
+			# if someone three-bets and has a high SPR, and I am in position, this is a golden opportunity to play.
+			# but it needs to be heads up! - anything more and I will fold.
+			# If I do not have absolute position, also fold;  because I would call and the guy inbetween us could call as well.
+			if limped_or_3_bet_to_me_pre_flop == 'bet':
+				# add check here that if his SPR is >= 3, then continue, way to check easily _1_pre_flop is compare
+				# his bet to his stack size, keeping in mind that when people bet, that amount it taken away from their stack size.
+				return 'CALL'
+
+		if self.my_position in premium_positions:
+			# Sometimes I want to 3-bet to get it heads up and I am in position;
+			# but crucial that the person who bet has high SPR even after calling my 3-bet
+			# fold to a 4-bet of course
+			pass
+
+		print('my position is not 5 or 6 or too much action before me, FOLDING')
+		return 'FOLD'
+
+	def pre_flop_action(self):
+		# ADD HERE my_hand to see if we should play the hand in the first place before checking limped,bet,3-bet
+		limped_or_3_bet_to_me_pre_flop = self.limped_or_3_bet_to_me_pre_flop()
+		action = self.action_pre_flop(limped_or_3_bet_to_me_pre_flop)
+
+		return action
+
+# x = RunPreFlop()
+# print(scan_call_button_to_see_bet_amount())
+# print(x.pre_flop_action())
