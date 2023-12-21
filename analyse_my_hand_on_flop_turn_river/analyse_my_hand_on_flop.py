@@ -56,10 +56,12 @@ class FlopHelper:
         # Is there a wrap draw on either flops
         self.wrap_draw_on_flop_generator = self.wrap_draw_on_flop(self.flop1)
         self.is_wrap_draw_on_flop1 = self.wrap_draw_on_flop_generator[0]
-        self.three_card_wrap_combis_on_flop1 = self.wrap_draw_on_flop_generator[1]
+        self.is_wrap_closed_on_flop1 = self.wrap_draw_on_flop_generator[1]
+        self.three_card_wrap_combis_on_flop1 = self.wrap_draw_on_flop_generator[2]
         self.wrap_draw_on_flop_generator = self.wrap_draw_on_flop(self.flop2)
         self.is_wrap_draw_on_flop2 = self.wrap_draw_on_flop_generator[0]
-        self.three_card_wrap_combis_on_flop2 = self.wrap_draw_on_flop_generator[1]
+        self.is_wrap_closed_on_flop2 = self.wrap_draw_on_flop_generator[1]
+        self.three_card_wrap_combis_on_flop2 = self.wrap_draw_on_flop_generator[2]
         # Is there a straight draw on either flops
         self.straight_draw_on_flop_generator = self.straight_draw_on_flop(self.flop1)
         self.is_straight_draw_on_flop1 = self.straight_draw_on_flop_generator[0]
@@ -107,9 +109,12 @@ class FlopHelper:
          2) if it is an 'lowpaired' or 'highpaied'.  lowpaired 10 3 3 board, and highpaied 10 10 3 board
         """
         # self.flop1 = [[14, 'S'], [6, 'S'], [5, 'C']]
-        flop_nums = [card[0] for card in flop[0]]
+        flop_nums = [card[0] for card in flop]
         is_flop_paired = True if len(set(flop_nums)) < 3 else False
-        high_or_low_paired_board = 'high' if flop_nums[0] == flop_nums[1] else 'low'
+        if is_flop_paired:
+            high_or_low_paired_board = 'high' if flop_nums[0] == flop_nums[1] else 'low'
+        else:
+            high_or_low_paired_board = None
 
         return is_flop_paired, high_or_low_paired_board
 
@@ -158,7 +163,7 @@ class FlopHelper:
         A closed straight will change much less often, whereas an open straight will change often, as there is
         a wrap potential going up, so you won't want to go too crazy unless you are nutted on other baord.
         """
-        flop_nums = [card[0] for card in flop[0]]  # flop looks like [[10, 'S'], [6, 'C'], [2, 'S']]
+        flop_nums = [card[0] for card in flop]  # flop looks like [[10, 'S'], [6, 'C'], [2, 'S']]
         all_two_card_straight_completing_combi_on_flop = []
         open_or_closed_straight = None
 
@@ -176,13 +181,15 @@ class FlopHelper:
             open_or_closed_straight = 'C'
         if flop_nums[0] == 14:  # edge case
             two_completing_straight_cards = []
-            for i in range(10, 15):
+            for i in reversed(range(10, 15)):
                 if i not in flop_nums:
                     two_completing_straight_cards.append(i)
-            all_two_card_straight_completing_combi_on_flop.append(two_completing_straight_cards)
+            if not all_two_card_straight_completing_combi_on_flop:
+                all_two_card_straight_completing_combi_on_flop.append(two_completing_straight_cards)
+                open_or_closed_straight = 'C'
         else:
             # case 2) no gaps between each card, e.g. 9 8 7
-            if total_distance_of_flop_cards == 3:
+            if total_distance_of_flop_cards == 2:
                 if flop_nums[0] == 13:  # edge case
                     all_two_card_straight_completing_combi_on_flop.append([flop_nums[0]+1, flop_nums[2]-1])  # 14 10
                     all_two_card_straight_completing_combi_on_flop.append([flop_nums[2]-1, flop_nums[2]-2])  # 10 9
@@ -197,16 +204,16 @@ class FlopHelper:
                 all_two_card_straight_completing_combi_on_flop.append([flop_nums[0]-1, flop_nums[0]-2])  # 9 8
                 open_or_closed_straight = 'C'
             # case 4) two gaps open, e.g. 10 9 6
-            if flop_nums[0] - flop_nums[1] == 1 and flop_nums[1] - flop_nums[2] == 3:
+            elif flop_nums[0] - flop_nums[1] == 1 and flop_nums[1] - flop_nums[2] == 3:
                 all_two_card_straight_completing_combi_on_flop.append([flop_nums[1]-1, flop_nums[1]-2])  # 8 7
                 open_or_closed_straight = 'O'
             # case 5) one total gap lower, e.g. 10 9 7
-            if flop_nums[0] - flop_nums[1] == 1 and flop_nums[1] - flop_nums[2] == 2:
+            elif flop_nums[0] - flop_nums[1] == 1 and flop_nums[1] - flop_nums[2] == 2:
                 all_two_card_straight_completing_combi_on_flop.append([flop_nums[0]+1, flop_nums[1]-1])  # 11 8
-                all_two_card_straight_completing_combi_on_flop.append([flop_nums[0]+1, flop_nums[2]-1])  # 8 6
+                all_two_card_straight_completing_combi_on_flop.append([flop_nums[1]-1, flop_nums[2]-1])  # 8 6
                 open_or_closed_straight = 'C'
             # case 6) one total gap upper, e.g. 10 8 7
-            if flop_nums[0] - flop_nums[1] == 2 and flop_nums[1] - flop_nums[2] == 1:
+            elif flop_nums[0] - flop_nums[1] == 2 and flop_nums[1] - flop_nums[2] == 1:
                 all_two_card_straight_completing_combi_on_flop.append([flop_nums[0]+1, flop_nums[0]-1])  # 11 9
                 all_two_card_straight_completing_combi_on_flop.append([flop_nums[0]-1, flop_nums[2]-1])  # 9 6
                 open_or_closed_straight = 'C'
@@ -236,10 +243,8 @@ class FlopHelper:
                 return True, 14, flop[0][1]
             elif 13 not in two_flush_draw_making_cards_nums:
                 return True, 13, flop[0][1]
-            elif 12 not in two_flush_draw_making_cards_nums:
-                return True, 12, flop[0][1]
             else:
-                return True, 11, flop[0][1]
+                return True, 12, flop[0][1]
 
         if flop[1][1] == flop[2][1]:  # compare first and second card suits
             two_flush_draw_making_cards_nums = (flop[1][0], flop[2][0])
@@ -247,10 +252,8 @@ class FlopHelper:
                 return True, 14, flop[1][1]
             elif 13 not in two_flush_draw_making_cards_nums:
                 return True, 13, flop[1][1]
-            elif 12 not in two_flush_draw_making_cards_nums:
-                return True, 12, flop[1][1]
             else:
-                return True, 11, flop[1][1]
+                return True, 12, flop[1][1]
 
         if flop[0][1] == flop[2][1]:  # compare first and third card suits
             two_flush_draw_making_cards_nums = (flop[0][0], flop[2][0])
@@ -270,8 +273,10 @@ class FlopHelper:
         I will consider all wraps, even if there are two, I'll consider both.
         Like always, the wraps will go down in nuttiness if there are more than one available.
 
-        This function will return True if I have a wrap in my hand.
-        It will return all three_card_wrap_combis_on_flop.
+        This function will return
+        1) True if I have a wrap in my hand.
+        2) if the wrap is closed
+        3) all three_card_wrap_combis_on_flop.
         For example, flop_nums= 12 6 5 then this returns [9, 8, 7], [8, 7, 4], [7, 4, 3], [4, 3, 2].
         Like other things, it will be more nutted first and go down in nuttiness, if there are more than one wraps
         available on the board.
@@ -281,47 +286,41 @@ class FlopHelper:
         Or if there is a three gapper between two cards and no gap between other cards.
         I'll call the latter closed wrap, it is easier to deal with.
         """
-        flop_nums = [card[0] for card in flop[0]]
-        closed_wrap = False
-        three_card_wrap_combis_on_flop = set()
+        flop_nums = [card[0] for card in flop]
+        closed_wrap = True
+        three_card_wrap_combis_on_flop = []
 
-        # Check that wrap is possible on the flop
-        # 10 7 6  or  10 9 6
-        # 10 6  or  6 2
-        if not (flop_nums[0] - flop_nums[1] == 3 and flop_nums[1] - flop_nums[2] == 1) or \
-                (flop_nums[0] - flop_nums[1] == 1 and flop_nums[1] - flop_nums[2] == 3) or \
-                (flop_nums[1] - flop_nums[2] == 4) or (flop_nums[0] - flop_nums[1] == 4):
-            return False, []
+        # HARD TO WRITE CONDITION TO CHECK IF THERE IS A WRAP; SO JUST WRITE OUT ALL SCENARIOS
+        # JUST UNIT TEST IT THOROUGHLY
 
-        if (flop_nums[1] - flop_nums[2] == 4) or (flop_nums[0] - flop_nums[1] == 4):
-            closed_wrap = True
-
-        if closed_wrap:
-            if flop_nums[1] - flop_nums[2] == 4:
-                three_card_wrap_combis_on_flop.add([flop_nums[1]-1, flop_nums[1]-2, flop_nums[1]-3])
-            elif flop_nums[0] - flop_nums[1] == 4:
-                three_card_wrap_combis_on_flop.add([flop_nums[0]-1, flop_nums[0]-2, flop_nums[0]-3])
+        # 14 13 9
+        if flop_nums[0] - flop_nums[1] == 4:
+            three_card_wrap_combis_on_flop.append([flop_nums[0]-1, flop_nums[0]-2, flop_nums[0]-3])
+        if flop_nums[1] - flop_nums[2] == 4:
+            three_card_wrap_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2, flop_nums[1]-3])
 
         if flop_nums[0] - flop_nums[1] == 3 and flop_nums[1] - flop_nums[2] == 1:  # 10 7 6
             if not flop_nums[0] == 14:
-                three_card_wrap_combis_on_flop.add([flop_nums[0]+1, flop_nums[0]-1, flop_nums[0]-2])
-                three_card_wrap_combis_on_flop.add([flop_nums[0]-1, flop_nums[0]-2, flop_nums[2]-1])
+                three_card_wrap_combis_on_flop.append([flop_nums[0]+1, flop_nums[0]-1, flop_nums[0]-2])
+                three_card_wrap_combis_on_flop.append([flop_nums[0]-1, flop_nums[0]-2, flop_nums[2]-1])
             else:
                 # edge case, if first card on flop is 14, we can't wrap higher than it
-                three_card_wrap_combis_on_flop.add([flop_nums[0]-1, flop_nums[0]-2, flop_nums[2]-1])
+                three_card_wrap_combis_on_flop.append([flop_nums[0]-1, flop_nums[0]-2, flop_nums[2]-1])
 
         elif flop_nums[0] - flop_nums[1] == 1 and flop_nums[1] - flop_nums[2] == 3:  # 10 9 6
             if not flop_nums[0] == 14:
-                three_card_wrap_combis_on_flop.add([flop_nums[0]+1, flop_nums[1]-1, flop_nums[1]-2])
-                three_card_wrap_combis_on_flop.add([flop_nums[1]-1, flop_nums[1]-2, flop_nums[2]-1])
+                three_card_wrap_combis_on_flop.append([flop_nums[0]+3, flop_nums[0]+2, flop_nums[0]+1])
+                three_card_wrap_combis_on_flop.append([flop_nums[0]+2, flop_nums[0]+1, flop_nums[1]+1])
+                three_card_wrap_combis_on_flop.append([flop_nums[0]+1, flop_nums[1]-1, flop_nums[1]-2])
+                three_card_wrap_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2, flop_nums[2]-1])
             else:
-                three_card_wrap_combis_on_flop.add([flop_nums[1]-1, flop_nums[1]-2, flop_nums[2]-1])
+                three_card_wrap_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2, flop_nums[2]-1])
+            closed_wrap = False
 
         if not three_card_wrap_combis_on_flop:
-            print('something went wrong with gathering three_card_wrap_combis_on_flop, it should not be empty')
-            breakpoint()
+            return False, None, []
 
-        return True, three_card_wrap_combis_on_flop
+        return True, closed_wrap, three_card_wrap_combis_on_flop
 
     def straight_draw_on_flop(self, flop):
         """
@@ -337,65 +336,67 @@ class FlopHelper:
 
         As usual, the combinations will go down in nuttiness as we go down the list.
         At this point I'll assume that we have done a check that a MADE STRAIGHT is NOT on board already.
+
+        TO DO: add inside straight draws, e.g. on 10 8, if you have 12,11 that is a straight draw as well;
+        a bit much for now so I'll leave it out.
         """
-        flop_nums = [card[0] for card in flop[0]]
-        two_card_straight_draw_combis_on_flop = set()
+        flop_nums = [card[0] for card in flop]
+        two_card_straight_draw_combis_on_flop = []
 
         # First check that there is a straight possibility between the flop cards
         distance_btw_cards_for_straight_to_be_possible = (1, 2, 3)
         distance_first_two_cards = flop_nums[0] - flop_nums[1]
         distance_second_and_third_card = flop_nums[1] - flop_nums[2]
-        if not any([distance_first_two_cards in distance_btw_cards_for_straight_to_be_possible,
-                    distance_second_and_third_card in distance_btw_cards_for_straight_to_be_possible]):
+
+        if not distance_first_two_cards in distance_btw_cards_for_straight_to_be_possible and \
+            not distance_second_and_third_card in distance_btw_cards_for_straight_to_be_possible:
             return False, []
 
         # If straight possible, retrieve all the two straight draw making combinations.
         # Get all combinations with first two flop cards
         if distance_first_two_cards == 3:  # 10 7
-            two_card_straight_draw_combis_on_flop.add([flop_nums[0]-1, flop_nums[0]-2])
+            two_card_straight_draw_combis_on_flop.append([flop_nums[0]-1, flop_nums[0]-2])
         elif distance_first_two_cards == 2:  # 10 8
             if flop_nums[0] != 14:
-                two_card_straight_draw_combis_on_flop.add([flop_nums[0]+1, flop_nums[0]-1])
-                two_card_straight_draw_combis_on_flop.add([flop_nums[1]+1, flop_nums[1]-1])
+                two_card_straight_draw_combis_on_flop.append([flop_nums[0]+1, flop_nums[0]-1])
+                two_card_straight_draw_combis_on_flop.append([flop_nums[1]+1, flop_nums[1]-1])
             else:
                 # edge case, can't have higher straight draw card higher than 14
-                two_card_straight_draw_combis_on_flop.add([flop_nums[1]+1, flop_nums[1]-1])
+                two_card_straight_draw_combis_on_flop.append([flop_nums[1]+1, flop_nums[1]-1])
         elif distance_first_two_cards == 1:  # 10 9
             if flop_nums[0] < 13:
-                two_card_straight_draw_combis_on_flop.add([flop_nums[0]+2, flop_nums[0]+1])
-                two_card_straight_draw_combis_on_flop.add([flop_nums[0]+1, flop_nums[1]-1])
-                two_card_straight_draw_combis_on_flop.add([flop_nums[1]-1, flop_nums[1]-2])
+                two_card_straight_draw_combis_on_flop.append([flop_nums[0]+2, flop_nums[0]+1])
+                two_card_straight_draw_combis_on_flop.append([flop_nums[0]+1, flop_nums[1]-1])
+                two_card_straight_draw_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2])
             elif flop_nums[0] == 13:
-                two_card_straight_draw_combis_on_flop.add([flop_nums[0]+1, flop_nums[1]-1])
-                two_card_straight_draw_combis_on_flop.add([flop_nums[1]-1, flop_nums[1]-2])
+                two_card_straight_draw_combis_on_flop.append([flop_nums[0]+1, flop_nums[1]-1])
+                two_card_straight_draw_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2])
             elif flop_nums[0] == 14:
-                two_card_straight_draw_combis_on_flop.add([flop_nums[1]-1, flop_nums[1]-2])
-        # Get all combinations with second two flop cards
+                two_card_straight_draw_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2])
+
+        # Get all combinations with second two flop cards (N.B. if second card is 14 first card must be 14)
         if distance_second_and_third_card == 3:  # 10 7
-            two_card_straight_draw_combis_on_flop.add([flop_nums[1]-1, flop_nums[1]-2])
+            two_card_straight_draw_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2])
         elif distance_second_and_third_card == 2:  # 10 8
-            if flop_nums[0] != 14:
-                two_card_straight_draw_combis_on_flop.add([flop_nums[1]+1, flop_nums[1]-1])
-                two_card_straight_draw_combis_on_flop.add([flop_nums[2]+1, flop_nums[2]-1])
+            if flop_nums[1] != 14:
+                two_card_straight_draw_combis_on_flop.append([flop_nums[1]+1, flop_nums[1]-1])
+                two_card_straight_draw_combis_on_flop.append([flop_nums[2]+1, flop_nums[2]-1])
             else:
-                two_card_straight_draw_combis_on_flop.add([flop_nums[2]+1, flop_nums[2]-1])
+                two_card_straight_draw_combis_on_flop.append([flop_nums[2]+1, flop_nums[2]-1])
         elif distance_second_and_third_card == 1:  # 10 9
-            if flop_nums[0] < 13:
-                two_card_straight_draw_combis_on_flop.add([flop_nums[1]+2, flop_nums[1]+1])
-                two_card_straight_draw_combis_on_flop.add([flop_nums[1]+1, flop_nums[2]-1])
-                two_card_straight_draw_combis_on_flop.add([flop_nums[2]-1, flop_nums[2]-2])
-            elif flop_nums[0] == 13:
-                two_card_straight_draw_combis_on_flop.add([flop_nums[1]+1, flop_nums[2]-1])
-                two_card_straight_draw_combis_on_flop.add([flop_nums[2]-1, flop_nums[2]-2])
-            elif flop_nums[0] == 14:
-                two_card_straight_draw_combis_on_flop.add([flop_nums[2]-1, flop_nums[2]-2])
+            if flop_nums[1] < 13:
+                two_card_straight_draw_combis_on_flop.append([flop_nums[1]+2, flop_nums[1]+1])
+                two_card_straight_draw_combis_on_flop.append([flop_nums[1]+1, flop_nums[2]-1])
+                two_card_straight_draw_combis_on_flop.append([flop_nums[2]-1, flop_nums[2]-2])
+            elif flop_nums[1] == 13:
+                two_card_straight_draw_combis_on_flop.append([flop_nums[1]+1, flop_nums[2]-1])
+                two_card_straight_draw_combis_on_flop.append([flop_nums[2]-1, flop_nums[2]-2])
 
         if not two_card_straight_draw_combis_on_flop:
             print('something went wrong with generating two straight card combis, two_card_straight_draw_combis_on_flop '
                   'should not be empty')
 
         return True, two_card_straight_draw_combis_on_flop
-
 
 
 class AnalyseMyHandOnFlop(FlopHelper):
@@ -413,8 +414,8 @@ class AnalyseMyHandOnFlop(FlopHelper):
         self.stack_tracker = stack_tracker
         self.pot_size = pot_size
         self.SPR_tracker = SPR_tracker
-        self.flop1_nums = [card[0] for card in self.flop1[0]]
-        self.flop2_nums = [card[0] for card in self.flop2[0]]
+        self.flop1_nums = [card[0] for card in self.flop1]
+        self.flop2_nums = [card[0] for card in self.flop2]
 
         # Helpers; checks if I have: (nut flush draw, set, check_raise
         self.flopped_nut_flush_draw_generator = self.helper_flopped_nut_flush_draw()
@@ -476,7 +477,7 @@ class AnalyseMyHandOnFlop(FlopHelper):
         self.non_nut_wrap_nut_flush_draw_flop1 = self.non_nut_wrap_nut_flush_draw_generator[0]
         self.non_nut_wrap_nut_flush_draw_flop2 = self.non_nut_wrap_nut_flush_draw_generator[1]
 
-        self.flopped_underhouse_generator = self.flopped_underhouse()
+        self.flopped_underhouse_generator = self.flopped_under_house()
         self.flopped_underhouse_flop1 = self.flopped_underhouse_generator[0]
         self.flopped_underhouse_flop2 = self.flopped_underhouse_generator[1]
 
@@ -516,6 +517,8 @@ class AnalyseMyHandOnFlop(FlopHelper):
          |    4        4    ->   check
 
         """
+        # TO DO: add SPR consideration to the below; there is a check_raise flag that you can use.
+
         if any(self.summary_of_hand_ratings_and_my_hand_on_flop1[6]) or any(self.summary_of_hand_ratings_and_my_hand_on_flop2[6]):
             action = 'bet'
         elif any(self.summary_of_hand_ratings_and_my_hand_on_flop1[5]) and any(self.summary_of_hand_ratings_and_my_hand_on_flop2[5]):
@@ -669,6 +672,7 @@ class AnalyseMyHandOnFlop(FlopHelper):
 
     def nut_flush_check(self):
         """
+        This function will check if I have the nut flush.
         A bit awkward to check if I have nut flush; the way I do it is to check if in my hand I have the particular
         number of the nut flush card, and keep track of all the INDEXES of the nums in my hand that matches this number.
         Then need to look in my hand and check if for those INDEXES, the suit is the same as the nut flush suit.
@@ -735,10 +739,10 @@ class AnalyseMyHandOnFlop(FlopHelper):
 
         # check if there is a wrap and I have nut wrap
         if self.three_card_wrap_combis_on_flop1:
-            if all(card in self.num_list for card in self.three_card_wrap_combis_on_flop1[0]):
+            if all(card in self.num_list for card in self.three_card_wrap_combis_on_flop1):
                 flopped_nut_flush_draw_nut_wrap_flop1 = True
         if self.three_card_wrap_combis_on_flop2:
-            if all(card in self.num_list for card in self.three_card_wrap_combis_on_flop2[0]):
+            if all(card in self.num_list for card in self.three_card_wrap_combis_on_flop2):
                 flopped_nut_flush_draw_nut_wrap_flop2 = True
 
         # check if I have nut flush draw as well
@@ -806,9 +810,9 @@ class AnalyseMyHandOnFlop(FlopHelper):
     def nut_wrap_non_nut_flush_draw(self):
         # check if there is a wrap and I have nut wrap
         flopped_nut_wrap_flop1 = True if self.three_card_wrap_combis_on_flop1 and \
-            all(card in self.num_list for card in self.three_card_wrap_combis_on_flop1[0]) else False
+            all(card in self.num_list for card in self.three_card_wrap_combis_on_flop1) else False
         flopped_nut_wrap_flop2 = True if self.three_card_wrap_combis_on_flop2 and \
-            all(card in self.num_list for card in self.three_card_wrap_combis_on_flop2[0]) else False
+            all(card in self.num_list for card in self.three_card_wrap_combis_on_flop2) else False
 
         # check if I flopped any flush draw
         flopped_nut_wrap_non_nut_flush_draw_flop1 = True if self.is_flush_draw_on_flop1 and \
@@ -830,7 +834,7 @@ class AnalyseMyHandOnFlop(FlopHelper):
         flopped_non_nut_wrap_nut_flush_draw_flop2 = True if self.flopped_nut_flush_draw_flop2 and flopped_any_wrap_flop2 else False
         return flopped_non_nut_wrap_nut_flush_draw_flop1, flopped_non_nut_wrap_nut_flush_draw_flop2
 
-    def flopped_underhouse(self):
+    def flopped_under_house(self):
         """
         This function will return if we flopped an underhouse on either flops.
         And underhouse is if board is 10 10 4 and I have 4 4 in my hand.

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/MVP_exploit_double_board_PLO6.iml" filepath="$PROJECT_DIR$/.idea/MVP_exploit_double_board_PLO6.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Double_board_PLO6_bot.iml" filepath="$PROJECT_DIR$/.idea/Double_board_PLO6_bot.iml" />
     </modules>
   </component>
 </project>

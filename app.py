@@ -5,7 +5,7 @@ from all_the_steps_with_coordinates.step_4_flop_turn_river.flop_turn_river impor
 from all_the_steps_with_coordinates.step_5_how_muchbet_and_in_pot.pot_size_and_action_behind import PotSizeAndActionBehindMe
 from all_the_steps_with_coordinates.step_7_detect_whos_turn_to_act.whos_turn_to_act import IsItMyTurnToAct
 from get_static_info_pre_flop import RunFirstOneTime
-from _1_pre_flop.app_pre_flop import RunPreFlop
+from pre_flop_play.app_pre_flop import RunPreFlop
 from analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_flop import AnalyseMyHandOnFlop
 from CLICKING import click_fold_call_bet
 from analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_turn import AnalyseMyHandOnTurn
@@ -29,10 +29,10 @@ def go_to_the_right_street(action, flopped, card_helper, static_information, str
 	but in the video I can't move it fast enough, and it will take my current street as the next one.
 	"""
 	current_street = None
-	if street_we_are_on == '_1_pre_flop':
+	if street_we_are_on == 'pre_flop_play':
 		print('running_pre_flop_analysis')
 		action, flopped, card_helper = run_this_on_pre_flop_app_dot_py(static_information)
-		current_street = '_1_pre_flop'
+		current_street = 'pre_flop_play'
 		print('finished_pre_flop_analysis')
 		# breakpoint()
 	elif street_we_are_on == '_2_on_flop':
@@ -64,7 +64,7 @@ def go_to_the_right_street(action, flopped, card_helper, static_information, str
 # PRE_FLOP PLAY!!!!!!!!!!
 def run_this_on_pre_flop_app_dot_py(static_information):
 	"""
-	General note - this class will be called if we are _1_pre_flop, and it is my turn to act.
+	General note - this class will be called if we are pre_flop_play, and it is my turn to act.
 
 	Not that in certain scenarios, I will need to act twice or even three or more
 	times on the flop, because if I check and someone ahead of me bets, it will come back to me to act on that street!
@@ -79,7 +79,7 @@ def run_this_on_pre_flop_app_dot_py(static_information):
 	fold_tracker = plip.detect_if_cards_in_hand(my_position, empty_seat_tracker)
 	stack_tracker = get_stack_sizes(my_position, fold_tracker)  # Set stack to 0 if someone folded; make this the universal way to check
 
-	RPF = RunPreFlop(my_position, num_list, suit_list, big_blind, stack_tracker)
+	RPF = RunPreFlop(my_position, num_list, suit_list, big_blind, stack_tracker, empty_seat_tracker)
 	action_pre_flop = RPF.pre_flop_action()
 
 	# all of the above takes a total of 6 seconds to run!
@@ -200,7 +200,7 @@ def run_new_hand():
 	# SWPTH = ShouldWePlayThisPreFlopHand(my_position, num_list, suit_list, empty_seat_tracker=empty_seat_tracker)
 	# my_hand = SWPTH.my_hand
 
-	# For any position that's not 3 or 4 should have enough time to run the normal routine _1_pre_flop
+	# For any position that's not 3 or 4 should have enough time to run the normal routine pre_flop_play
 	# big_blind = RFOT.big_blind
 	big_blind = 0.4
 	# print(f'my hand looks like: {num_list}')
@@ -209,7 +209,7 @@ def run_new_hand():
 	action = None
 	flopped = None
 	card_helper = None
-	new_hand_check = {'_1_pre_flop': 1, '_2_on_flop': 2, 'on_turn': 3, 'on_river': 4}
+	new_hand_check = {'pre_flop_play': 1, '_2_on_flop': 2, 'on_turn': 3, 'on_river': 4}
 
 	# For each hand, while we are in that hand, we are inside this while loop and DO NOT break out of it
 	while True:
@@ -224,8 +224,8 @@ def run_new_hand():
 		if new_hand_check[street_we_are_on] < current_street:
 			# this means we are in a new hand, so break out of while loop
 			break
-		elif street_we_are_on == '_1_pre_flop' and new_hand_check[street_we_are_on] == current_street:
-			# one caveat is that if everyone fold _1_pre_flop and it moves to the next hand - sometimes I don't detect it
+		elif street_we_are_on == 'pre_flop_play' and new_hand_check[street_we_are_on] == current_street:
+			# one caveat is that if everyone fold pre_flop_play and it moves to the next hand - sometimes I don't detect it
 			# so add extra button check, if the button has moved, we are ofc in a new hand, so break and re-run everything
 			if RFOT.take_SS_and_determine_position() != my_position:
 				break
@@ -239,7 +239,7 @@ while True:
 	# but in video when you hover over the screen something pops up.
 
 	while check_if_my_cards_are_live():  # checked if I have folded - if so no need to run anything
-		if ftr.determine_street() == '_1_pre_flop':
+		if ftr.determine_street() == 'pre_flop_play':
 			print('run new hand analysis')
 			run_new_hand()
 	print('my hand is folded - remove this print statement once I am happy it works as expected')

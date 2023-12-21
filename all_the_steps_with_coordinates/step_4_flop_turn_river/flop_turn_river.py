@@ -8,7 +8,7 @@ class FlopTurnRiver:
 		# self._2_on_flop = self._2_on_flop()
 		# self.on_turn = self.on_turn()
 		# self.on_river = self.on_river()
-		# self._1_pre_flop = self._1_pre_flop()
+		# self.pre_flop_play = self.pre_flop_play()
 		pass
 
 	def on_flop(self):
@@ -88,9 +88,9 @@ class FlopTurnRiver:
 
 		elif pre_flop:
 			# print('we are pre-flop')
-			return '_1_pre_flop'
+			return 'pre_flop_play'
 		else:
-			raise Exception('Did not detect if we are on flop, turn, river or _1_pre_flop')
+			raise Exception('Did not detect if we are on flop, turn, river or pre_flop_play')
 
 
 # x = FlopTurnRiver()

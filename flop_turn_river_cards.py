@@ -134,7 +134,7 @@ class TheFlop:
 					cropped_im.save(f"{sys.path[0]}/photo_dump/flop1_card.png")
 					cropped_im_path = f"{sys.path[0]}/photo_dump/flop1_card.png"
 					new_im = Image.open(cropped_im_path)
-					new_im.show()
+					# new_im.show()
 					current_num = pytesseract.image_to_string(cropped_im, config='--psm 6')
 					# print(current_num)
 					flop1_num.append(current_num)
@@ -145,7 +145,7 @@ class TheFlop:
 					cropped_im.save(f"{sys.path[0]}/photo_dump/flop2_card.png")
 					cropped_im_path = f"{sys.path[0]}/photo_dump/flop2_card.png"
 					new_im = Image.open(cropped_im_path)
-					new_im.show()
+					# new_im.show()
 					current_num = pytesseract.image_to_string(cropped_im, config='--psm 6')
 					# print(current_num)
 					flop2_num.append(current_num)
@@ -414,8 +414,8 @@ class TheRiver(TheTurn):
 		return river, river_num, river_suit
 
 
-x = TheFlop()
-print(x.detect_flop_nums_and_suit())
+# x = TheFlop()
+# print(x.detect_flop_nums_and_suit())
 
 # y = TheTurn()
 # print(y.add_turn_card_num_and_suit_to_flop([[10, 'H'], [8, 'C'], [12, 'D']]))

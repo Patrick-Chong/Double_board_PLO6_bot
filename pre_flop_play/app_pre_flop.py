@@ -3,66 +3,66 @@ import sys
 import pyautogui
 from PIL import Image
 import pytesseract
-import imutils
-from PIL import ImageFilter
+
+from analyse_my_hand_pre_flop import ShouldWePlayThisPreFlopHand
 
 
 def read_white_text_on_image(image_path, ss):
-		# Grayscale, Gaussian blur, Otsu's threshold
-		image = cv2.imread(image_path)
-		gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-		blur = cv2.GaussianBlur(gray, (3,3), 0)
-		thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+	# Grayscale, Gaussian blur, Otsu's threshold
+	image = cv2.imread(image_path)
+	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	blur = cv2.GaussianBlur(gray, (3,3), 0)
+	thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
 
-		# Morph open to remove noise and invert image
-		kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
-		opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=1)
-		invert = 255 - opening
+	# Morph open to remove noise and invert image
+	kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+	opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=1)
+	invert = 255 - opening
 
-		# Perform text extraction
-		image_string_detected = pytesseract.image_to_string(invert, lang='eng', config='--psm 6')
+	# Perform text extraction
+	image_string_detected = pytesseract.image_to_string(invert, lang='eng', config='--psm 6')
 
-		if not image_string_detected:
-			# verify it was Checked by scanning the button; if it is a blue background it means it is a check.
+	if not image_string_detected:
+		# verify it was Checked by scanning the button; if it is a blue background it means it is a check.
 
-			# crop the right side of the image so none of the white 'check' is in the picutre, then detect blue colour
-			im = Image.open(image_path)
-			cropped_image_for_blue = im.crop((120, 8, 200, 200))
+		# crop the right side of the image so none of the white 'check' is in the picutre, then detect blue colour
+		im = Image.open(image_path)
+		cropped_image_for_blue = im.crop((120, 8, 200, 200))
 
-			pixels = list(ss.getdata())
-			total_pixels = len(pixels)
-			num_of_blue_pixel = 0
-			for pixel in pixels:
-				R,G,B,C = pixel
+		pixels = list(ss.getdata())
+		total_pixels = len(pixels)
+		num_of_blue_pixel = 0
+		for pixel in pixels:
+			R,G,B,C = pixel
 
-				if B > 110:
-					num_of_blue_pixel += 1
+			if B > 110:
+				num_of_blue_pixel += 1
 
-			if num_of_blue_pixel >= 0.8*total_pixels:
-				return 0
-			else:
-				print('no number detected on button and not enough blue on button detected')
-				breakpoint()
-
+		if num_of_blue_pixel >= 0.8*total_pixels:
+			return 0
 		else:
-			# number_on_button looks something like Call 1:64 or Call 0.40 or Call'2:24 or Call'13.44
-			# gather all the numbers into a string
-			bet_amount = ''
-			for num in image_string_detected:
-				try:
-					curr_num = int(num)
-					bet_amount = bet_amount + f'{curr_num}'
-				except:
-					pass
+			print('no number detected on button and not enough blue on button detected')
+			breakpoint()
 
-			# add decimal point to three spaces from the right
-			bet_amount = bet_amount[:len(bet_amount)-2] + '.' + bet_amount[len(bet_amount)-2:]
+	else:
+		# number_on_button looks something like Call 1:64 or Call 0.40 or Call'2:24 or Call'13.44
+		# gather all the numbers into a string
+		bet_amount = ''
+		for num in image_string_detected:
 			try:
-				final_bet_amount = float(bet_amount)
-				return final_bet_amount
+				curr_num = int(num)
+				bet_amount = bet_amount + f'{curr_num}'
 			except:
-				print(f'bet amount looks like {bet_amount}')
-				breakpoint()
+				pass
+
+		# add decimal point to three spaces from the right
+		bet_amount = bet_amount[:len(bet_amount)-2] + '.' + bet_amount[len(bet_amount)-2:]
+		try:
+			final_bet_amount = float(bet_amount)
+			return final_bet_amount
+		except:
+			print(f'bet amount looks like {bet_amount}')
+			breakpoint()
 
 def scan_call_button_to_see_bet_amount():
 	"""
@@ -89,16 +89,12 @@ def scan_call_button_to_see_bet_amount():
 	return final_bet_amount
 
 
-class RunPreFlop:
+class RunPreFlop(ShouldWePlayThisPreFlopHand):
 
-	def __init__(self, my_position, num_list, suit_list, big_blind, stack_tracker):
-
-		self.my_position = my_position
-		self.num_list = num_list
-		self.suit_list = suit_list
+	def __init__(self, my_position, num_list, suit_list, big_blind, stack_tracker, empty_seat_tracker):
+		ShouldWePlayThisPreFlopHand.__init__(self, my_position, empty_seat_tracker, num_list, suit_list)
 		self.big_blind = big_blind
 		self.stack_tracker = stack_tracker
-
 		self.pre_flop_bet_amount = scan_call_button_to_see_bet_amount()
 
 	def limped_or_3_bet_to_me_pre_flop(self):
@@ -114,26 +110,21 @@ class RunPreFlop:
 		Because before when I just
 		"""
 		folded_or_empty = ('Fold', 'Empty')
-
 		if self.pre_flop_bet_amount <= self.big_blind:
 			return 'limped'
-
 		elif self.big_blind < self.pre_flop_bet_amount <= 4 * self.big_blind:
 			return 'bet'
-
 		elif 4 * self.big_blind < self.pre_flop_bet_amount <= 10 * self.big_blind:
 			return 'three_bet'
-
 		elif self.pre_flop_bet_amount > 10 * self.big_blind:
 			return 'four_bet'
-
 		else:
 			print(f"Issue with limped bet or three bet detection, pre_flop bet size detected is {self.pre_flop_bet_amount}")
 			breakpoint()
 
 	def action_pre_flop(self, limped_or_3_bet_to_me_pre_flop):
 		"""
-		My play strategy will be as follows:
+		My play strategy  with regards to position will be as follows:
 
 		- If I am in position 5 or 6:
 			- premium hand: I'll raise a bet, call a 3-bet
@@ -141,9 +132,15 @@ class RunPreFlop:
 			- I'll only play premium hands, and will call them
 			- The exception is double suited aces, where I will bet.
 
-		(When deciding what hands to play, I've just setup certain hands and will only play those,
-		no distinction made between 'premium' and 'call' hands - there's no need).
+		IN THIS FUNCTION I should consider all things I noted down on notepad to make the
+		decision to 'bet', 'call' or 'fold' pre_flop:
+		- SPR (only if SPR is now extremely low is this a consideration otherwise doesn't matter)
+		- action behind me (particularly has it been 3-bet)
+		- am I in position, play as per what it says above.
+		- do I meet at least 3/4 pillars
 		"""
+		if not self.does_my_hand_meet_at_least_three_pillars():
+			return 'Fold'
 
 		premium_positions = (5, 6)
 
@@ -161,7 +158,7 @@ class RunPreFlop:
 			# but it needs to be heads up! - anything more and I will fold.
 			# If I do not have absolute position, also fold;  because I would call and the guy inbetween us could call as well.
 			if limped_or_3_bet_to_me_pre_flop == 'bet':
-				# add check here that if his SPR is >= 3, then continue, way to check easily _1_pre_flop is compare
+				# add check here that if his SPR is >= 3, then continue, way to check easily pre_flop_play is compare
 				# his bet to his stack size, keeping in mind that when people bet, that amount it taken away from their stack size.
 				return 'CALL'
 
