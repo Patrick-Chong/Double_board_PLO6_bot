@@ -15,7 +15,7 @@ ftr = FlopTurnRiver()
 plip = PlayersLeftInPot()
 
 
-def go_to_the_right_street(action, flopped, card_helper, static_information, street_we_are_on):
+def go_to_the_right_street(action, static_information, street_we_are_on, extra_information):
 	"""
 	The order it should run is:
 	1) Check if it is my turn to act (bottom of this script);
@@ -28,36 +28,32 @@ def go_to_the_right_street(action, flopped, card_helper, static_information, str
 	It will work in real-time because it will waiting until it's my turn to act on the next street,
 	but in the video I can't move it fast enough, and it will take my current street as the next one.
 	"""
-	current_street = None
 	if street_we_are_on == 'pre_flop_play':
 		print('running_pre_flop_analysis')
-		action, flopped, card_helper = run_this_on_pre_flop_app_dot_py(static_information)
+		action, extra_information = run_this_on_pre_flop_app_dot_py(static_information)
 		current_street = 'pre_flop_play'
 		print('finished_pre_flop_analysis')
 		# breakpoint()
 	elif street_we_are_on == '_2_on_flop':
 		print('running_on_flop_analysis')
-		action_on_flop = run_this_on_the_flop_app_dot_py(action, flopped, card_helper, static_information)
-		action = action_on_flop
+		action, extra_information = run_this_on_the_flop_app_dot_py(action, static_information, extra_information)
 		current_street = '_2_on_flop'
 		# breakpoint()
 	elif street_we_are_on == 'on_turn':
 		print('running_on_turn_analysis')
-		action_on_turn, flopped, card_helper = run_this_on_the_turn_app_dot_py(action, flopped, card_helper, static_information)
-		action, flopped, card_helper = action_on_turn, flopped, card_helper
+		action, extra_information = run_this_on_the_turn_app_dot_py(action, static_information, extra_information)
 		current_street = 'on_turn'
 		# breakpoint()
 	elif street_we_are_on == 'on_river':
 		print('running_on_river_analysis')
-		action_on_river, flopped, card_helper = run_this_on_the_river_app_dot_py(action, flopped, card_helper, static_information)
-		action, flopped, card_helper = action_on_river, flopped, card_helper
+		action, extra_information = run_this_on_the_river_app_dot_py(action, static_information, extra_information)
 		current_street = 'on_river'
 		# breakpoint()
 	else:
 		print('issue detecting what street we are on')
 		breakpoint()
 
-	return action, flopped, card_helper, current_street
+	return action, extra_information
 
 
 # ---------------------------------------------------------
@@ -80,17 +76,17 @@ def run_this_on_pre_flop_app_dot_py(static_information):
 	stack_tracker = get_stack_sizes(my_position, fold_tracker)  # Set stack to 0 if someone folded; make this the universal way to check
 
 	RPF = RunPreFlop(my_position, num_list, suit_list, big_blind, stack_tracker, empty_seat_tracker)
-	action_pre_flop = RPF.pre_flop_action()
+	action_pre_flop, extra_information = RPF.pre_flop_action()
 
 	# all of the above takes a total of 6 seconds to run!
 	click_fold_call_bet(action_pre_flop)
-	return action_pre_flop
+	return action_pre_flop, extra_information
 
 # ---------------------------------------------------------
 # ON FLOP PLAY!!!!!
 
 
-def run_this_on_the_flop_app_dot_py(action, flopped, card_helper, static_information):
+def run_this_on_the_flop_app_dot_py(action, static_information, extra_information):
 	my_position = static_information['my_position']
 	empty_seat_tracker = static_information['empty_seat_tracker']
 	num_list = static_information['num_list']
@@ -109,19 +105,17 @@ def run_this_on_the_flop_app_dot_py(action, flopped, card_helper, static_informa
 	# print('generating needed info on flop took 10s to run')
 
 	AMHOF = AnalyseMyHandOnFlop(stack_tracker, SPR_tracker, guy_to_right_bet_size,
-								positions_of_players_to_act_ahead_of_me,
-								pot_size, my_position, num_list, suit_list, big_blind)
+								positions_of_players_to_act_ahead_of_me, pot_size,
+								my_position, num_list, suit_list, big_blind)
 
-	action_on_flop = AMHOF.analyse_my_hand_against_flop(action)
-
+	action_on_flop, extra_information = AMHOF.analyse_my_hand_against_flop(action, extra_information)
 	click_fold_call_bet(action_on_flop)
-
-	return action_on_flop
+	return action_on_flop, extra_information
 
 
 # -------------------------------------------------------
 # ACTION ON TURN!!!!!!!!!!
-def run_this_on_the_turn_app_dot_py(action_on_flop, flopped, card_helper, static_information):
+def run_this_on_the_turn_app_dot_py(action_on_flop, static_information, extra_information):
 
 	my_position = static_information['my_position']
 	empty_seat_tracker = static_information['empty_seat_tracker']
@@ -140,21 +134,19 @@ def run_this_on_the_turn_app_dot_py(action_on_flop, flopped, card_helper, static
 	positions_of_players_to_act_ahead_of_me = PSABM.are_there_players_to_act_ahead_of_me(how_much_can_i_bet_or_raise_to)
 
 	AMHOT = AnalyseMyHandOnTurn(stack_tracker, SPR_tracker, guy_to_right_bet_size,
-								positions_of_players_to_act_ahead_of_me,
-								pot_size, my_position, num_list, suit_list, big_blind)
+								positions_of_players_to_act_ahead_of_me, pot_size,
+								my_position, num_list, suit_list, big_blind)
 
 	action_on_turn = None
 	if ftr.determine_street() == 'on_turn':
-		action_on_turn, flopped, card_helper = AMHOT.analyse_my_hand_against_turn(action_on_flop, flopped, card_helper)
-
+		action_on_turn, flopped, card_helper = AMHOT.analyse_my_hand_against_turn(action_on_flop, extra_information)
 	click_fold_call_bet(action_on_turn)
-
-	return action_on_turn, flopped, card_helper
+	return action_on_turn, extra_information
 
 
 # -------------------------------------------------------
 # ACTION ON RIVER!!!!!!!!!!
-def run_this_on_the_river_app_dot_py(action_on_turn, flopped, card_helper, static_information):
+def run_this_on_the_river_app_dot_py(action_on_turn, static_information, extra_information):
 
 	my_position = static_information['my_position']
 	empty_seat_tracker = static_information['empty_seat_tracker']
@@ -179,11 +171,11 @@ def run_this_on_the_river_app_dot_py(action_on_turn, flopped, card_helper, stati
 
 	action_on_river = None
 	if ftr.determine_street() == 'on_river':
-		action_on_river, flopped, card_helper = AMHOR.analyse_my_hand_against_river(action_on_turn, flopped, card_helper)
+		action_on_river, flopped, card_helper = AMHOR.analyse_my_hand_against_river(action_on_turn, extra_information)
 
 	click_fold_call_bet(action_on_river)
 
-	return action_on_river, flopped, card_helper
+	return action_on_river, extra_information
 
 
 # N.B. The below in iteself takes 10 second to run
@@ -217,9 +209,11 @@ def run_new_hand():
 		while not is_it_my_turn_to_act.is_it_my_turn_to_act(my_position):
 			print(f'waiting for my turn to act')
 		street_we_are_on = ftr.determine_street()
-		action, flopped, card_helper, current_street = go_to_the_right_street(action, flopped, card_helper, static_information, street_we_are_on)
+		action, extra_information = go_to_the_right_street(action, static_information, extra_information)
 
 		# CHECK WHETHER WE ARE IN A NEW HAND, if so break out of this while loop
+		# (TO DO: I removed this from my latest code, but need to add something to check if we are on the
+		# same street still! - which we will be if someone ahead of us raises or bets when we checked).
 		current_street = new_hand_check[current_street]
 		if new_hand_check[street_we_are_on] < current_street:
 			# this means we are in a new hand, so break out of while loop

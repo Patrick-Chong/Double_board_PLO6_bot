@@ -1049,8 +1049,7 @@ class AnalyseMyHandOnRiver(AnalyseMyHandOnTurn):
             if lowest_spr >= 2:
                 return 'BET', 'straight got there on river and checked to me', 'bet river'
 
-
-    def analyse_my_hand_against_river(self, action_on_turn, flopped, card_helper):
+    def analyse_my_hand_against_river(self, action_on_turn, extra_information=None):
         """
         (R)!!!!!
         At the start of every main hand you MUST check

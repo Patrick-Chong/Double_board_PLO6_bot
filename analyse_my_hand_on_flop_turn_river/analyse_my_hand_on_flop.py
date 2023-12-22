@@ -1,7 +1,5 @@
 from flop_turn_river_cards import TheFlop
 
-TF = TheFlop()
-
 
 class FlopHelper:
     # Note this class can and should be used on the turn and river too!
@@ -11,66 +9,65 @@ class FlopHelper:
         self.suit_list = suit_list
         self.my_position = my_position
 
-        self.flop1, self.flop2 = self.organise_flop()
+        self.flop1, self.flop2 = FlopHelper.organise_flop()
         # self.flop1 = [[14, 'S'], [6, 'S'], [5, 'C']]
-
 
         # ANYTHING COMPLETED ON FLOP (board_pair, flush, or straight?)
         # Is the board paired on either flops
-        self.is_any_board_paired_on_flop_generator = self.is_any_board_paired_on_flop(self.flop1)
+        self.is_any_board_paired_on_flop_generator = FlopHelper.is_any_board_paired_on_flop(self.flop1)
         self.is_board2_paired_on_flop1 = self.is_any_board_paired_on_flop_generator[0]
         self.high_or_low_paired_board_flop1 = self.is_any_board_paired_on_flop_generator[1]
-        self.is_any_board_paired_on_flop_generator = self.is_any_board_paired_on_flop(self.flop2)
+        self.is_any_board_paired_on_flop_generator = FlopHelper.is_any_board_paired_on_flop(self.flop2)
         self.is_board_paired_on_flop2 = self.is_any_board_paired_on_flop_generator[0]
         self.high_or_low_paired_board_flop2 = self.is_any_board_paired_on_flop_generator[1]
         # Is there a made flush on either flops
-        self.made_flush_on_flop_generator = self.made_flush_on_flop(self.flop1)
+        self.made_flush_on_flop_generator = FlopHelper.made_flush_on_flop(self.flop1)
         self.is_flush_completed_on_flop1 = self.made_flush_on_flop_generator[0]
         self.nut_flush_nums_flop1 = self.made_flush_on_flop_generator[1]
         self.nut_flush_suit_flop1 = self.made_flush_on_flop_generator[2]
-        self.made_flush_on_flop_generator = self.made_flush_on_flop(self.flop2)
+        self.made_flush_on_flop_generator = FlopHelper.made_flush_on_flop(self.flop2)
         self.is_flush_completed_on_flop2 = self.made_flush_on_flop_generator[0]
         self.nut_flush_nums_flop2 = self.made_flush_on_flop_generator[1]
         self.nut_flush_suit_flop2 = self.made_flush_on_flop_generator[2]
         # Is there a made straight on either flops
-        self.made_straight_on_flop_generator = self.made_straight_on_flop(self.flop1)
+        self.made_straight_on_flop_generator = FlopHelper.made_straight_on_flop(self.flop1)
         self.is_straight_completed_on_flop1 = self.made_straight_on_flop_generator[0]
         self.two_card_combis_that_complete_the_straight_on_flop1 = self.made_straight_on_flop_generator[1]
         self.open_or_closed_straight_flop1 = self.made_straight_on_flop_generator[2]  # open: 2,5,6  ; closed: 2 3 6
-        self.made_straight_on_flop_generator = self.made_straight_on_flop(self.flop2)
+        self.made_straight_on_flop_generator = FlopHelper.made_straight_on_flop(self.flop2)
         self.is_straight_completed_on_flop2 = self.made_straight_on_flop_generator[0]
         self.two_card_combis_that_complete_the_straight_on_flop2 = self.made_straight_on_flop_generator[1]
         self.open_or_closed_straight_flop2 = self.made_straight_on_flop_generator[2]  # open: 2,5,6  ; closed: 2 3 6
 
-
-        # DRAWS ON FLOP (flush, wrap, straight?)
+        # DRAWS AVAILABLE ON FLOP (flush, wrap, straight?)
         # Is there a flush draw on flop
-        self.flush_draw_on_flop_generator = self.flush_draw_on_flop(self.flop1)
+        self.flush_draw_on_flop_generator = FlopHelper.flush_draw_on_flop(self.flop1)
         self.is_flush_draw_on_flop1 = self.flush_draw_on_flop_generator[0]
         self.nut_flush_draw_nums_on_flop1 = self.flush_draw_on_flop_generator[1]
         self.nut_flush_draw_suit_on_flop1 = self.flush_draw_on_flop_generator[2]
-        self.flush_draw_on_flop_generator = self.flush_draw_on_flop(self.flop2)
+        self.flush_draw_on_flop_generator = FlopHelper.flush_draw_on_flop(self.flop2)
         self.is_flush_draw_on_flop2 = self.flush_draw_on_flop_generator[0]
         self.nut_flush_draw_nums_on_flop2 = self.flush_draw_on_flop_generator[1]
         self.nut_flush_draw_suit_on_flop2 = self.flush_draw_on_flop_generator[2]
         # Is there a wrap draw on either flops
-        self.wrap_draw_on_flop_generator = self.wrap_draw_on_flop(self.flop1)
+        self.wrap_draw_on_flop_generator = FlopHelper.wrap_draw_on_flop(self.flop1)
         self.is_wrap_draw_on_flop1 = self.wrap_draw_on_flop_generator[0]
         self.is_wrap_closed_on_flop1 = self.wrap_draw_on_flop_generator[1]
         self.three_card_wrap_combis_on_flop1 = self.wrap_draw_on_flop_generator[2]
-        self.wrap_draw_on_flop_generator = self.wrap_draw_on_flop(self.flop2)
+        self.wrap_draw_on_flop_generator = FlopHelper.wrap_draw_on_flop(self.flop2)
         self.is_wrap_draw_on_flop2 = self.wrap_draw_on_flop_generator[0]
         self.is_wrap_closed_on_flop2 = self.wrap_draw_on_flop_generator[1]
         self.three_card_wrap_combis_on_flop2 = self.wrap_draw_on_flop_generator[2]
         # Is there a straight draw on either flops
-        self.straight_draw_on_flop_generator = self.straight_draw_on_flop(self.flop1)
+        self.straight_draw_on_flop_generator = FlopHelper.straight_draw_on_flop(self.flop1)
         self.is_straight_draw_on_flop1 = self.straight_draw_on_flop_generator[0]
         self.two_card_straight_draw_combis_on_flop1 = self.straight_draw_on_flop_generator[1]
-        self.straight_draw_on_flop_generator = self.straight_draw_on_flop(self.flop2)
+        self.straight_draw_on_flop_generator = FlopHelper.straight_draw_on_flop(self.flop2)
         self.is_straight_draw_on_flop2 = self.straight_draw_on_flop_generator[0]
         self.two_card_straight_draw_combis_on_flop2 = self.straight_draw_on_flop_generator[1]
 
-    def organise_flop(self):
+    @staticmethod
+    def organise_flop():
         """
         Note that when I sort the num of suit, the way I wrote it, the corresponding suits get moved together,
         which is extremely important!
@@ -82,11 +79,10 @@ class FlopHelper:
         flop1 = [[13, 'H'], [6, 'C'], [2, 'H']]
         flop2 = [[14, 'D'], [12, 'D'], [8, 'C']]
         """
-
+        generate_flop = TheFlop()
         final_flop1 = list()
         final_flop2 = list()
-
-        flop1, flop2 = TF.detect_flop_nums_and_suit()
+        flop1, flop2 = generate_flop.detect_flop_nums_and_suit()
         flop1_num, flop1_suit = flop1[0], flop1[1]
         final_flop1.append([flop1_num[0], flop1_suit[0]])
         final_flop1.append([flop1_num[1], flop1_suit[1]])
@@ -102,7 +98,8 @@ class FlopHelper:
 
         return flop1, flop2
 
-    def is_any_board_paired_on_flop(self, flop):
+    @staticmethod
+    def is_any_board_paired_on_flop(flop):
         """
         This function will return:
          1) if the given flop is paired,
@@ -118,7 +115,8 @@ class FlopHelper:
 
         return is_flop_paired, high_or_low_paired_board
 
-    def made_flush_on_flop(self, flop):
+    @staticmethod
+    def made_flush_on_flop(flop):
         """
         This function will return:
         1) if there is a flush on board - doesn't mean I have the flush.
@@ -143,7 +141,8 @@ class FlopHelper:
         else:
             return False, 'no_flush_on_flop', 'no_flush_on_flop'
 
-    def made_straight_on_flop(self, flop):
+    @staticmethod
+    def made_straight_on_flop(flop):
         """
         This function returns 3 things:
 
@@ -221,7 +220,8 @@ class FlopHelper:
         return True, all_two_card_straight_completing_combi_on_flop, open_or_closed_straight
 
     # DRAWS
-    def flush_draw_on_flop(self, flop):
+    @staticmethod
+    def flush_draw_on_flop(flop):
         """
         This function will return:
         1) if there is a flush draw on the flop
@@ -268,7 +268,8 @@ class FlopHelper:
 
         return False, None, None  # these need to be None for how_big_is_my_flush_draw to work
 
-    def wrap_draw_on_flop(self, flop):
+    @staticmethod
+    def wrap_draw_on_flop(flop):
         """
         I will consider all wraps, even if there are two, I'll consider both.
         Like always, the wraps will go down in nuttiness if there are more than one available.
@@ -322,7 +323,8 @@ class FlopHelper:
 
         return True, closed_wrap, three_card_wrap_combis_on_flop
 
-    def straight_draw_on_flop(self, flop):
+    @staticmethod
+    def straight_draw_on_flop(flop):
         """
         Just like wrap draw above this, I will consider all straights.
 
@@ -404,11 +406,11 @@ class AnalyseMyHandOnFlop(FlopHelper):
     def __init__(self, stack_tracker, SPR_tracker, guy_to_right_bet_size,
                  positions_of_players_to_act_ahead_of_me,
                  pot_size, my_position, num_list, suit_list, big_blind):
-        # As a learning point, the order of the below matters; if you initialize self.special_hand1 before self.flop, you will get an error
-        # since self.special_hand1 uses self.flop in it's function - makes perfect sense.
+        # As a learning point, the order of the below matters; if you use an attribute in a function before
+        # the attribute was initialised, you will of course get an error.
         FlopHelper.__init__(self, my_position, num_list, suit_list)
 
-        self.guy_to_right_bet_size = guy_to_right_bet_size
+        self.guy_to_right_bet_size = guy_to_right_bet_size  # it is a float, it is 0 if checked.
         self.positions_of_players_to_act_ahead_of_me = positions_of_players_to_act_ahead_of_me
 
         self.stack_tracker = stack_tracker
@@ -427,6 +429,7 @@ class AnalyseMyHandOnFlop(FlopHelper):
         self.flopped_set_flop2 = self.flopped_set_generator[1]
 
         self.check_raise_f = self.helper_check_raise()
+        self.check_bet_three_bet_behind_me = self.check_bet_three_bet()
 
         # WHAT DO I HAVE
         # Rated 6
@@ -492,15 +495,22 @@ class AnalyseMyHandOnFlop(FlopHelper):
         self.any_wrap_on_rainbow_board_flop1 = self.any_wrap_on_rainbow_board_generator[0]
         self.any_wrap_on_rainbow_board_flop2 = self.any_wrap_on_rainbow_board_generator[1]
 
-        self.summary_of_hand_ratings_and_my_hand_on_flop1_generator = self.summary_of_hand_ratings_and_my_hand_on_flops()
-        self.summary_of_hand_ratings_and_my_hand_on_flop1 = self.summary_of_hand_ratings_and_my_hand_on_flop1_generator[0]
-        self.summary_of_hand_ratings_and_my_hand_on_flop2 = self.summary_of_hand_ratings_and_my_hand_on_flop1_generator[1]
+        self.summary_of_hand_ratings_and_my_hand_on_flop1_generator = self.my_hand_ratings_on_both_flops()
+        self.my_hand_rating_on_flop1 = self.summary_of_hand_ratings_and_my_hand_on_flop1_generator[0]
+        self.my_hand_rating_on_flop2 = self.summary_of_hand_ratings_and_my_hand_on_flop1_generator[1]
 
-    def analyse_my_hand_against_flop(self, action=None):
+    def analyse_my_hand_against_flop(self, action=None, extra_information=None):
         """
         This function will consider my hand ratings on flop1 and flop2, and return the action corresponding
         to the strength of my hand.
-        It will take into consideration the SPR, when deciding whether to bet or not.
+        It will take into consideration the following, in the given order:
+        - Did someone 3-bet pre_flop (indication of aces)
+        - Ratings of my hand
+        - Action I am facing, i.e. bet, checked, before me
+        - SPR
+
+        - Am I in position (Only matters for check raising, since I am not exploiting)
+        - Heads up (later, for now play it all the same) - exploit
 
         The initial aim will be to only play nutted hands, where my equity is high.
         So from an action perspective, I will want to get the money in as efficiently as possible.
@@ -510,29 +520,52 @@ class AnalyseMyHandOnFlop(FlopHelper):
          |  flop1    flop2      action
          |    6       any   ->   bet
          |   any       6    ->   bet
-         |
          |    5        5    ->   bet
          |    5        4    ->   bet
          |    4        5    ->   bet
          |    4        4    ->   check
 
+        extra_information['three_bet_pre_flop'] is available.
         """
-        # TO DO: add SPR consideration to the below; there is a check_raise flag that you can use.
+        # TO DO: not sure yet how to do this, but I want to add a check if the max SPR <= 1, then just go all in.
+        # But anything > 1, I don't want to do that. The issue that I can't figure out, is that when I
+        # scan for SPR, it doesn't include the bet someone has made, if they have bet. And this makes a big difference.
+        # (this is important for many reasons, because if I have a 4/4 rated hand and someone bets 0.5 pot and they
+        # are all in, I might fold according to my bot, but that's ridiculous in real time, as I'd call that all day.
 
-        if any(self.summary_of_hand_ratings_and_my_hand_on_flop1[6]) or any(self.summary_of_hand_ratings_and_my_hand_on_flop2[6]):
+        # if rating of one hand is 6, BET regardless of anything
+        if any(self.my_hand_rating_on_flop1[6]) or any(self.my_hand_rating_on_flop2[6]):
             action = 'bet'
-        elif any(self.summary_of_hand_ratings_and_my_hand_on_flop1[5]) and any(self.summary_of_hand_ratings_and_my_hand_on_flop2[5]):
+        # if rating of both hands are 5's, bet regardless
+        elif any(self.my_hand_rating_on_flop1[5]) and any(self.my_hand_rating_on_flop2[5]):
             action = 'bet'
-        elif any(self.summary_of_hand_ratings_and_my_hand_on_flop1[5]) and any(self.summary_of_hand_ratings_and_my_hand_on_flop2[4]):
-            action = 'bet'
-        elif any(self.summary_of_hand_ratings_and_my_hand_on_flop1[4]) and any(self.summary_of_hand_ratings_and_my_hand_on_flop2[5]):
-            action = 'bet'
-        elif any(self.summary_of_hand_ratings_and_my_hand_on_flop1[4]) and any(self.summary_of_hand_ratings_and_my_hand_on_flop2[4]):
-            action = 'check'
 
-        return action
+        # special case if it was 3-bet pre_flop and ace on flop, if I don't have at least 5/5 rating combo, FOLD IT.
+        if extra_information['three_bet_pre_flop']:
+            if self.flop1[0][0] == 14 or self.flop2[0][0] == 14:
+                if not action == 'bet':  # I have a 5/5 rating combo
+                    action = 'fold'
+        else:
+            # combo of 5 and 4, check/call as nuts can change.
+            if any(self.my_hand_rating_on_flop1[5]) and any(self.my_hand_rating_on_flop2[4]) \
+                    or any(self.my_hand_rating_on_flop1[4]) and any(self.my_hand_rating_on_flop2[5]):
+                if self.check_bet_three_bet_behind_me == 'check':
+                    action = 'bet'
+                elif self.check_bet_three_bet_behind_me == 'bet':
+                    action = 'call'
+                else:
+                    # it has been three_bet if we are here; should add a checked if someone is all in then perhaps worth a call.
+                    action = 'fold'
 
-    def summary_of_hand_ratings_and_my_hand_on_flops(self):
+            # combo of 4 and 4 play passively, see what happens on future streets.
+            elif any(self.my_hand_rating_on_flop1[4]) and any(self.my_hand_rating_on_flop2[4]):
+                action = 'check'
+            else:
+                action = 'fold'
+
+        return action, extra_information
+
+    def my_hand_ratings_on_both_flops(self):
         """
         This function will hold a dictionary of hand rating to hands that are in that rating.
         hand_ratings_flop1 = dict(6:[('self.overhouse_on_flop1', self.overhouse_on_flop1), ('self.nut_flush_on_flop1', nut_flush_on_flop1),
@@ -547,6 +580,10 @@ class AnalyseMyHandOnFlop(FlopHelper):
         Note that the dictionary consists of the rating as the key, and the values of each rating is a dictionary of tuples,
         where the first item in the tuple is a string representation of the hand in that rating and the second item
         will be True or False to indicate whether we have that in our hand.
+
+        Rating 6: represents the absolute coconuts
+        Rating 5: the nuts/nuts draw but nuts can change on future street
+        Rating 4: Strong hand but can be dominated but has equity
         """
         hand_ratings_flop1 = dict()
         hand_ratings_flop2 = dict()
@@ -566,7 +603,6 @@ class AnalyseMyHandOnFlop(FlopHelper):
                                  ('self.flopped_any_set_flop1', self.flopped_any_set_flop1),
                                  ('self.flopped_house_with_overhouse_avail_flop1', self.flopped_house_with_overhouse_avail_flop1),
                                  ('self.any_wrap_on_rainbow_board_flop1', self.any_wrap_on_rainbow_board_flop1),
-                                 ('self.summary_of_hand_ratings_and__my_hand_on_flop1', self.summary_of_hand_ratings_and_my_hand_on_flop1)
                                  ]
         hand_ratings_flop2[6] = [('self.overhouse_on_flop2', self.overhouse_on_flop2),
                                  ('self.nut_flush_on_flop2', self.nut_flush_on_flop2),
@@ -584,9 +620,21 @@ class AnalyseMyHandOnFlop(FlopHelper):
                                  ('self.flopped_any_set_flop2', self.flopped_any_set_flop2),
                                  ('self.flopped_house_with_overhouse_avail_flop2', self.flopped_house_with_overhouse_avail_flop2),
                                  ('self.any_wrap_on_rainbow_board_flop2', self.any_wrap_on_rainbow_board_flop2),
-                                 ('self.summary_of_hand_ratings_and__my_hand_on_flop2', self.summary_of_hand_ratings_and_my_hand_on_flop2)
                                  ]
         return hand_ratings_flop1, hand_ratings_flop2
+
+    def check_bet_three_bet(self):
+        """
+        This function simply returns if the action behind me is 'check', 'bet', 'three_bet'.
+        'three_bet' represents all in.
+        If someone has three_bet post flop, they are committed.
+        """
+        if self.guy_to_right_bet_size == 0:
+            return 'check'
+        if self.guy_to_right_bet_size <= self.pot_size:
+            return 'bet'
+        else:
+            return 'three_bet'
 
     def helper_check_raise(self):
         """
@@ -603,7 +651,6 @@ class AnalyseMyHandOnFlop(FlopHelper):
            above 27x won't go in by the river.
         """
         highest_spr_in_play = max(spr for spr in self.SPR_tracker.values())
-
         return False if highest_spr_in_play <= 15 else True
 
     def helper_flopped_nut_flush_draw(self):

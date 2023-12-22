@@ -416,22 +416,18 @@ def read_white_text_on_image_my_button_bet_size(image_path, ss, stack_tracker, f
 		# crop the right side of the image so none of the white 'check' is in the picture, then detect blue colour
 		im = Image.open(image_path)
 		cropped_image_for_blue = im.crop((120, 8, 200, 200))
-
 		pixels = list(ss.getdata())
 		total_pixels = len(pixels)
 		num_of_blue_pixel = 0
 		for pixel in pixels:
 			R,G,B,C = pixel
-
 			if B > 110:
 				num_of_blue_pixel += 1
-
 		if num_of_blue_pixel >= 0.8*total_pixels:
 			return 0
 		else:
 			print('no number detected on button and not enough blue on button detected')
 			breakpoint()
-
 	else:
 		# number_on_button looks something like Call 1:64 or Call 0.40 or Call'2:24 or Call'13.44
 		# gather all the numbers into a string
@@ -442,7 +438,6 @@ def read_white_text_on_image_my_button_bet_size(image_path, ss, stack_tracker, f
 				bet_amount = bet_amount + f'{curr_num}'
 			except:
 				pass
-
 		# Determine if we need to add a decimal point
 		bet_larger_than_stack = 0
 		for stack in stack_tracker:
@@ -463,7 +458,6 @@ def read_white_text_on_image_my_button_bet_size(image_path, ss, stack_tracker, f
 			except:
 				print(f'bet amount looks like {bet_amount}')
 				breakpoint()
-
 		if not bet_amount:  # for testing, bet_amount will = ''
 			return 0
 		return float(bet_amount)

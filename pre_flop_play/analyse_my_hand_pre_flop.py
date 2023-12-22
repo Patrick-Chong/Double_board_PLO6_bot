@@ -34,7 +34,7 @@ class PreFlopHandCombinations:
         self.double_suited_aces_f = self.double_suited_ace()
         self.double_suited_f = self.double_suited()
         # pair
-        self.how_many_high_pair_in_my_hand_f = self.how_many_high_pairs_in_my_hand()  # returns an integer
+        self.high_pair_in_my_hand_f = self.high_pairs_in_my_hand()  # returns an integer
         # running
         self.check_for_wrap_and_wrap_plus_pair_generator = self.check_for_wrap_and_wrap_plus_pair()
         self.wrap_no_pair = self.check_for_wrap_and_wrap_plus_pair_generator[0]
@@ -112,7 +112,7 @@ class PreFlopHandCombinations:
         if double_suited_count > 1:
             return True
 
-    def how_many_high_pairs_in_my_hand(self):
+    def high_pairs_in_my_hand(self):
         """
         I consider a high pair to be a pair that is 10 or above.
         """
@@ -239,8 +239,13 @@ class ShouldWePlayThisPreFlopHand(PreFlopHandCombinations):
 
         (On second thought as long as 3/4 pillars are met I'll play the hand;
         because if you think about it as long as 3/4 pillars are met, can you think of a weak hand
-        that meets 3/4 pillars, if so then change the strat but if not, which I think not, then
+        that meets 3/4 pillars, if so then change the strategy but if not, which I think not, then
         keep it like this)
+
+        I think it's worth making a distinction between a very strong and a strong hand.
+        Because I can think of hands where I would want to 3-bet that meet 3 pillars but others that I would not.
+        For now leave it, to play safer even super storng hands don't three bet pre_flop, just go nuts when
+        you hit something strong on flop. SOMETHING TO CONSIDER LATER ONCE THINGS ARE RUNNING.
 
         # high card
         self.at_least_five_high_cards = self.count_high_cards()  # True or False
@@ -261,10 +266,23 @@ class ShouldWePlayThisPreFlopHand(PreFlopHandCombinations):
         Look at notepad and see what the considerations are to decide, call, bet or fold.
         On the flop I check what I have already so no point doing the work here too.
         """
-        if not len(pillars) >= 5:
-            return 'fold'
+        pillars_of_a_strong_starting_hand = dict()
+        pillars_of_a_strong_starting_hand['high_cards'] = self.at_least_five_high_cards
+        pillars_of_a_strong_starting_hand['suited'] = [self.single_suited_ace_f, self.single_suited_king_f]
+        pillars_of_a_strong_starting_hand['pair'] = self.high_pair_in_my_hand_f
+        pillars_of_a_strong_starting_hand['running'] = [self.wrap_no_pair, self.wrap_plus_pair]
+        number_of_pillars_met = 0
+        for pillar in pillars_of_a_strong_starting_hand.values():
+            if isinstance(pillar, list):
+                if any(pillar):
+                    number_of_pillars_met += 1
+            else:
+                if pillar:
+                    number_of_pillars_met += 1
+        if number_of_pillars_met < 3:
+            return False
 
-        create dictionary with all three 3
+        return True
 
     def double_suited_aces(self):
         pass
@@ -276,5 +294,4 @@ class ShouldWePlayThisPreFlopHand(PreFlopHandCombinations):
         Not as important if the cards or suits are high, because this is powerful if you hit the right flop.
         i.e. you can be flopping the opp dead.
         """
-
-        return True
+        pass

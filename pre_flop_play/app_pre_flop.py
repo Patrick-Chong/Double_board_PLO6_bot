@@ -28,22 +28,18 @@ def read_white_text_on_image(image_path, ss):
 		# crop the right side of the image so none of the white 'check' is in the picutre, then detect blue colour
 		im = Image.open(image_path)
 		cropped_image_for_blue = im.crop((120, 8, 200, 200))
-
 		pixels = list(ss.getdata())
 		total_pixels = len(pixels)
 		num_of_blue_pixel = 0
 		for pixel in pixels:
 			R,G,B,C = pixel
-
 			if B > 110:
 				num_of_blue_pixel += 1
-
 		if num_of_blue_pixel >= 0.8*total_pixels:
 			return 0
 		else:
 			print('no number detected on button and not enough blue on button detected')
 			breakpoint()
-
 	else:
 		# number_on_button looks something like Call 1:64 or Call 0.40 or Call'2:24 or Call'13.44
 		# gather all the numbers into a string
@@ -54,7 +50,6 @@ def read_white_text_on_image(image_path, ss):
 				bet_amount = bet_amount + f'{curr_num}'
 			except:
 				pass
-
 		# add decimal point to three spaces from the right
 		bet_amount = bet_amount[:len(bet_amount)-2] + '.' + bet_amount[len(bet_amount)-2:]
 		try:
@@ -124,13 +119,17 @@ class RunPreFlop(ShouldWePlayThisPreFlopHand):
 
 	def action_pre_flop(self, limped_or_3_bet_to_me_pre_flop):
 		"""
-		My play strategy  with regards to position will be as follows:
+		To begin with, as less 'risky' approach is NOT to 3-bet pre_flop, though I'm quite sure this
+		is profitable if done right, I still think the equity is too close to be doing this.
+		Better to see a flop 'cheaply', then go ham if I connected hard with the flop.
 
+		My play strategy with regards to position will be as follows, if I meet the 3 pillars:
 		- If I am in position 5 or 6:
-			- premium hand: I'll raise a bet, call a 3-bet
+			- call a 3-bet (maybe I'll fold - play and see; what if it's 4-bet behind me?)
+			The only way this is worth it is if I incorporate bluffs in, with position, I think.
+			- raise if it has been limped
 		- If I am in any other position:
-			- I'll only play premium hands, and will call them
-			- The exception is double suited aces, where I will bet.
+			- Call any bets and limp if it has been limped.
 
 		IN THIS FUNCTION I should consider all things I noted down on notepad to make the
 		decision to 'bet', 'call' or 'fold' pre_flop:
@@ -140,43 +139,27 @@ class RunPreFlop(ShouldWePlayThisPreFlopHand):
 		- do I meet at least 3/4 pillars
 		"""
 		if not self.does_my_hand_meet_at_least_three_pillars():
-			return 'Fold'
-
+			return 'FOLD'
 		premium_positions = (5, 6)
-
 		if self.my_position in premium_positions:
-			if limped_or_3_bet_to_me_pre_flop == 'limped':
-				print('it was checked to me so I bet')
-				return 'BET'
-			# leaving the below in, I want to 3-bet sometimes.
-			# elif limped_or_3_bet_to_me_pre_flop == 'bet':
-			# 	print('it was bet into me so I call')
-			# 	return 'CALL', 'bet_into_me_I_call', 'bet_into_me_I_call'
-
-		if self.my_position == 6:
-			# if someone three-bets and has a high SPR, and I am in position, this is a golden opportunity to play.
-			# but it needs to be heads up! - anything more and I will fold.
-			# If I do not have absolute position, also fold;  because I would call and the guy inbetween us could call as well.
-			if limped_or_3_bet_to_me_pre_flop == 'bet':
-				# add check here that if his SPR is >= 3, then continue, way to check easily pre_flop_play is compare
-				# his bet to his stack size, keeping in mind that when people bet, that amount it taken away from their stack size.
+			if limped_or_3_bet_to_me_pre_flop in ('three_bet', 'bet'):
 				return 'CALL'
-
-		if self.my_position in premium_positions:
-			# Sometimes I want to 3-bet to get it heads up and I am in position;
-			# but crucial that the person who bet has high SPR even after calling my 3-bet
-			# fold to a 4-bet of course
-			pass
-
-		print('my position is not 5 or 6 or too much action before me, FOLDING')
+			if limped_or_3_bet_to_me_pre_flop == 'limped':
+				return 'BET'
+		else:
+			if limped_or_3_bet_to_me_pre_flop in ('bet', 'limped'):
+				return 'CALL'
 		return 'FOLD'
 
 	def pre_flop_action(self):
-		# ADD HERE my_hand to see if we should play the hand in the first place before checking limped,bet,3-bet
+		extra_information = dict()  # store if someone 3-bet pre_flop
+
 		limped_or_3_bet_to_me_pre_flop = self.limped_or_3_bet_to_me_pre_flop()
 		action = self.action_pre_flop(limped_or_3_bet_to_me_pre_flop)
 
-		return action
+		extra_information['three_bet_pre_flop'] = True if limped_or_3_bet_to_me_pre_flop == 'three_bet' else False
+
+		return action, extra_information
 
 # x = RunPreFlop()
 # print(scan_call_button_to_see_bet_amount())

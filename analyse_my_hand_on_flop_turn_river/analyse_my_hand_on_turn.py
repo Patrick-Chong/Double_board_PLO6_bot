@@ -1272,7 +1272,7 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
                 return 'BET', 'scot_checked_to_me_on_turn_straight_completed_betting', 'bet_turn'
 
 
-    def analyse_my_hand_against_turn(self, action_on_flop, flopped, card_helper):
+    def analyse_my_hand_against_turn(self, action_on_flop, extra_information):
         """
         flop_action will be 'BET' or 'CALL' - tells us what we did on the flop
 
