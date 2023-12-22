@@ -3,11 +3,7 @@ from flop_turn_river_cards import TheFlop
 
 class FlopHelper:
     # Note this class can and should be used on the turn and river too!
-    def __init__(self, my_position, num_list, suit_list):
-
-        self.num_list = num_list
-        self.suit_list = suit_list
-        self.my_position = my_position
+    def __init__(self):
 
         self.flop1, self.flop2 = FlopHelper.organise_flop()
         # self.flop1 = [[14, 'S'], [6, 'S'], [5, 'C']]
@@ -405,15 +401,21 @@ class AnalyseMyHandOnFlop(FlopHelper):
 
     def __init__(self, stack_tracker, SPR_tracker, guy_to_right_bet_size,
                  positions_of_players_to_act_ahead_of_me,
-                 pot_size, my_position, num_list, suit_list, big_blind):
+                 pot_size, my_position, num_list, suit_list, big_blind, empty_seat_tracker):
         # As a learning point, the order of the below matters; if you use an attribute in a function before
         # the attribute was initialised, you will of course get an error.
-        FlopHelper.__init__(self, my_position, num_list, suit_list)
+        FlopHelper.__init__(self)
+
+        # static information
+        self.my_position = my_position
+        self.empty_seat_tracker = empty_seat_tracker
+        self.num_list = num_list
+        self.suit_list = suit_list
+        self.big_blind = big_blind
 
         self.guy_to_right_bet_size = guy_to_right_bet_size  # it is a float, it is 0 if checked.
         self.positions_of_players_to_act_ahead_of_me = positions_of_players_to_act_ahead_of_me
 
-        self.stack_tracker = stack_tracker
         self.pot_size = pot_size
         self.SPR_tracker = SPR_tracker
         self.flop1_nums = [card[0] for card in self.flop1]
@@ -495,9 +497,9 @@ class AnalyseMyHandOnFlop(FlopHelper):
         self.any_wrap_on_rainbow_board_flop1 = self.any_wrap_on_rainbow_board_generator[0]
         self.any_wrap_on_rainbow_board_flop2 = self.any_wrap_on_rainbow_board_generator[1]
 
-        self.summary_of_hand_ratings_and_my_hand_on_flop1_generator = self.my_hand_ratings_on_both_flops()
-        self.my_hand_rating_on_flop1 = self.summary_of_hand_ratings_and_my_hand_on_flop1_generator[0]
-        self.my_hand_rating_on_flop2 = self.summary_of_hand_ratings_and_my_hand_on_flop1_generator[1]
+        self.summary_of_hand_ratings_and_my_hand_on_flop_generator = self.my_hand_ratings_on_both_flops()
+        self.my_hand_rating_on_flop1 = self.summary_of_hand_ratings_and_my_hand_on_flop_generator[0]
+        self.my_hand_rating_on_flop2 = self.summary_of_hand_ratings_and_my_hand_on_flop_generator[1]
 
     def analyse_my_hand_against_flop(self, action=None, extra_information=None):
         """

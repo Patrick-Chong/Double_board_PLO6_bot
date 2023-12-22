@@ -1,3 +1,17 @@
+"""
+What I will consider on turn:
+1) The turn card on both flops
+2) Did the turn card change the nuts or complete anything?
+3) My hand rating on turn (could be very different to hand rating on flop)
+4) Do I check, bet, raise? To decide this, need to consider:
+- SPR
+- Anyone ahead of me to act
+- My hand rating on turn
+- For exploit look at things like if the nuts changed on the turn card
+(for now just play straight forward- bet if you have it, check if you do not).
+"""
+
+
 from collections import defaultdict
 from analyse_my_hand_on_flop import AnalyseMyHandOnFlop
 
@@ -1158,118 +1172,6 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
                 return 'BET', 'dbof_dry_board_on_flop_nothing_changed_on_turn_checked_to_me_betting_again', 'bet_flop_turn'
 
 
-
-    def board_paired_on_flop_turn_play(self, flopped, card_helper):
-        """
-        EXPLOIT
-        """
-
-        # TO DO: verify that checking the SPR in this way is okay, when running against real thing
-        lowest_spr = 10000
-        for stack in self.stack_tracker:
-            if stack:
-                stack = float(stack)
-                pot_size = float(self.pot_size)
-                current_spr = stack/pot_size
-                lowest_spr = min(current_spr, lowest_spr)
-
-        # low_paired_card_high_non_paired_card
-        if flopped == 'bpof_calling_bet_on_flop_low_paired_high_non_paired':
-            if not self.guy_to_right_bet_size:
-                return 'BET', 'bpof_opp_bet_on_flop_checked_on_turn_I_am_betting_low_paired_high_non_paired', 'opp_bet_on_flop_checked_on_turn'
-            else:
-                if self.stack_tracker[self.guy_to_right_bet_position] >= 2 * self.guy_to_right_bet_size:
-                    return 'CALL', 'bpof_opp_bet_on_flop_bet_on_turn_I_call_to_see_river', 'opp_bet_flop_and_turn'
-                else:
-                    return 'FOLD', 'bpof_opp_bet_on_flop_bet_on_turn_folding_SPR_not_enough_to_catch_him_on_river', 'opp_bet_flop_and_turn'
-
-        if flopped == 'bpof_betting_on_flop_checked_to_me_in_position_low_paired_high_non_paired' or \
-                flopped == 'bpof_betting_on_flop_checked_to_me_one_guy_ahead_of_me_to_act_low_paired_high_non_paired':
-            # may be worth checking if the guy who called is in position to you; but I think I will bet either way in SPR is enough
-
-            if not self.guy_to_right_bet_size:
-                if lowest_spr >= 2:
-                    return 'BET', 'bpof_opp_called_flop_bet_and_checked_turn_again_I_am_betting_low_paired_high_non_paired_and_low_paired_high_non_paired', 'opp_called_my_flop_bet_I_am_betting_turn'
-
-        # high_paired_card_low_non_paired_card
-        if flopped == 'bpof_betting_flop_checked_to_me_in_position_high_pair_low_non_pair':
-            if not self.guy_to_right_bet_size:
-                if lowest_spr >= 2:
-                    return 'BET', 'bpof_opp_checked_to_me_twice_on_flop_and_turn_I_am_betting_high_pair_low_non_pair', 'betting_flop_and_turn'
-                else:
-                    # Not so sure about this play - the story is a bit off here; i.e. bet check bet.
-                    return 'CALL', 'bpof_SPR_less_than_2_on_turn_planning_to_pot_river_if_checked_to_me_then', 'I_bet_on_flop_checked_on_turn'
-            else:
-                if lowest_spr >= 2:
-                    return 'CALL', 'opp_story_does_not_make_sense_checking_flop_to_bet_turn_I_am_calling_to_bet_on_river_if_he_checks', 'I_bet_on_flop_call_on_turn'
-
-        if flopped == 'bpof_calling_bet_on_flop_high_paired_low_non_paired':
-            # I'll leave this case out, but need to check if the turn nums is higher than the non-paired card from the flop
-            # if so and checked to you then bet.
-            pass
-
-        if flopped == 'bpof_betting_flop_checked_to_me_one_guy_to_act_ahead_of_me_high_pair_low_non_pair':
-            # if we are here check if the guy who called is the one in position to us.
-            # because then our check of self.guy_to_right_bet_size could be meaningless if it is heads up and just us 2
-            if not self.guy_to_right_bet_size:
-                if lowest_spr >= 2:
-                    return 'BET', 'bpof_betting_turn_my_flop_bet_was_called_and_then_checked_to_me_on_turn_high_pair_low_non_pair', 'I_bet_flop_bet_turn'
-
-        # high_paired_card_high_non_paired_card
-        if flopped == 'bpof_betting_flop_checked_to_me_in_position_high_pair_high_non_pair' \
-            or flopped == 'bpof_betting_flop_checked_to_me_one_guy_to_act_ahead_of_me_high_pair_high_non_pair':
-            # TO DO: worth checking if the guy who called is in position to me
-            if not self.guy_to_right_bet_size:
-                if lowest_spr >= 2:
-                    return 'BET', 'bpof_bet_flop_was_called_betting_turn_high_pair_high_non_pair', 'I_bet_flop_and_turn'
-                else:
-                    return 'CALL', 'bpof_SPR_is_low_checking_turn_to_bet_river_potentially_high_pair_high_non_pair', 'I_bet_flop_checked_turn'
-
-        # low_paired_card_low_non_paired_card
-        if flopped == 'bpof_betting_flop_checked_to_me_in_position_low_pair_low_non_pair' \
-                or flopped == 'bpof_betting_flop_checked_to_me_one_guy_to_act_ahead_of_me_low_pair_low_non_pair':
-            # TO DO: worth checking if opp is guy in position of us
-            if not self.guy_to_right_bet_size:
-                if lowest_spr >= 2:
-                    return 'BET', 'bpof_bet_flop_was_called_betting_turn_low_pair_low_non_pair', 'I_bet_flop_and_turn'
-
-        if flopped == 'bpof_calling_bet_on_flop_in_position_low_paired_low_non_paired':
-            # TO DO: add check here if turn card is higher than non-paired flop card
-            if not self.guy_to_right_bet_size:
-                if lowest_spr >= 2:
-                    return 'BET', 'bpof_bet_flop_was_called_betting_turn_low_paired_low_non_paired', 'I_bet_flop_and_turn'
-                else:
-                    return 'CALL', 'bpof_SPR_is_low_checking_turn_to_bet_river_potentially_low_paired_low_non_paired', 'I_bet_flop_checked_turn'
-
-        # adding a catch all where if I am in position, checked to me and SPR is high enough I will just bet and see what happens
-        if not self.positions_of_players_to_act_ahead_of_me:
-            if not self.guy_to_right_bet_size:
-                if lowest_spr >= 2:
-                    return 'BET', 'bpof_default_hit_where_its_checked_to_me_in_position_and_spr_greater_than_2_low_pair_low_non_pair', 'betting_turn_default_play_was_hit'
-
-
-        # I don't have much, check/fold
-        if not self.guy_to_right_bet_size:
-            return 'CALL', 'sh1_I_have_nothing_checking', 'I_have_nothing_I_check'
-        else:
-            return 'FOLD', 'sh1_I_have_nothing_folding', 'I_have_nothing_I_fold'
-
-    def straight_completed_on_turn_turn_play(self, flopped, card_helper):
-        """
-        EXPLOIT
-
-        """
-        lowest_spr = 10000
-        for stack in self.stack_tracker:
-            if stack:
-                stack = float(stack)
-                pot_size = float(self.pot_size)
-                current_spr = stack/pot_size
-                lowest_spr = min(current_spr, lowest_spr)
-
-        if not self.guy_to_right_bet_size:
-            if lowest_spr >= 2:
-                return 'BET', 'scot_checked_to_me_on_turn_straight_completed_betting', 'bet_turn'
 
 
     def analyse_my_hand_against_turn(self, action_on_flop, extra_information):
