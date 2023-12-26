@@ -18,26 +18,22 @@ def calcdiff(im1_path, im2_path):
 
 def check_if_my_cards_are_live():
     """
-    This function is simply to check whether I am in the current hand - it will do
-    this by looking at whether my cards are blacked out or not.
+    This function is simply to check whether my current hand is live - it will do
+    this by looking at whether my cards are greyed out or not.
     It will return True if my hand is alive.
 
     To do this, take a pic of the non-blacked out hand and one of the blacked-out hand
     and do comparisons, just like with the button, can set a degree of accuracy.
     """
+    # coordinates work for both video and app
     screenshot = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/ss_of_my_hand.png", region=(1060, 1390, 220, 58))
     ss_of_my_hand = f"{sys.path[0]}/photo_dump/ss_of_my_hand.png"
-
     my_hand_blacked_out = f"{sys.path[0]}/photo_dump/my_hand_blacked_out.png"
-
-
-    # screenshot.show()
-
+    screenshot.show()
 
     if calcdiff(ss_of_my_hand, my_hand_blacked_out) >= 50: 
         return True
     else: 
         return False
 
-
-# print(check_if_my_cards_are_live())
+print(check_if_my_cards_are_live())

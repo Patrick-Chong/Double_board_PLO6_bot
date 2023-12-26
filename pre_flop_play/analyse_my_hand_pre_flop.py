@@ -225,7 +225,7 @@ class ShouldWePlayThisPreFlopHand(PreFlopHandCombinations):
 
     def my_turn_to_act(self):
         is_it_my_turn_to_act = IsItMyTurnToAct()
-        return is_it_my_turn_to_act.is_it_my_turn_to_act(self.my_position)
+        return is_it_my_turn_to_act.is_it_my_turn_to_act()
 
     def does_my_hand_meet_at_least_three_pillars(self):
         """

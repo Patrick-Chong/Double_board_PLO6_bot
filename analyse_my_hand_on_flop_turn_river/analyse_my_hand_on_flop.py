@@ -1,3 +1,7 @@
+"""
+
+"""
+
 from flop_turn_river_cards import TheFlop
 
 
@@ -267,21 +271,18 @@ class FlopHelper:
     @staticmethod
     def wrap_draw_on_flop(flop):
         """
-        I will consider all wraps, even if there are two, I'll consider both.
-        Like always, the wraps will go down in nuttiness if there are more than one available.
-
         This function will return
         1) True if I have a wrap in my hand.
         2) if the wrap is closed
         3) all three_card_wrap_combis_on_flop.
         For example, flop_nums= 12 6 5 then this returns [9, 8, 7], [8, 7, 4], [7, 4, 3], [4, 3, 2].
-        Like other things, it will be more nutted first and go down in nuttiness, if there are more than one wraps
-        available on the board.
 
-        There is only a wrap draw if there is a two gapper between two of the cards, and no gaps between the
-        other two, e.g. 10 9 6. Otherwise, no wrap is possible.
+        There is only a wrap draw if there is a two gapper between two of the cards, e.g. 10 9 2.
         Or if there is a three gapper between two cards and no gap between other cards.
         I'll call the latter closed wrap, it is easier to deal with.
+
+        Note that if there is a two gapper between first two cards, there must be a gap greater than one between
+        the second and third card, otherwise it is a made straight...
         """
         flop_nums = [card[0] for card in flop]
         closed_wrap = True
@@ -290,29 +291,46 @@ class FlopHelper:
         # HARD TO WRITE CONDITION TO CHECK IF THERE IS A WRAP; SO JUST WRITE OUT ALL SCENARIOS
         # JUST UNIT TEST IT THOROUGHLY
 
-        # 14 13 9
+        # 12 8 2 or 12 6 2
         if flop_nums[0] - flop_nums[1] == 4:
             three_card_wrap_combis_on_flop.append([flop_nums[0]-1, flop_nums[0]-2, flop_nums[0]-3])
         if flop_nums[1] - flop_nums[2] == 4:
             three_card_wrap_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2, flop_nums[1]-3])
 
-        if flop_nums[0] - flop_nums[1] == 3 and flop_nums[1] - flop_nums[2] == 1:  # 10 7 6
+        # 10 7 2 - third card must be lowe than 6, otherwise made straight is on board
+        if flop_nums[0] - flop_nums[1] == 3 and flop_nums[1] - flop_nums[2] > 1:
             if not flop_nums[0] == 14:
                 three_card_wrap_combis_on_flop.append([flop_nums[0]+1, flop_nums[0]-1, flop_nums[0]-2])
                 three_card_wrap_combis_on_flop.append([flop_nums[0]-1, flop_nums[0]-2, flop_nums[2]-1])
             else:
                 # edge case, if first card on flop is 14, we can't wrap higher than it
-                three_card_wrap_combis_on_flop.append([flop_nums[0]-1, flop_nums[0]-2, flop_nums[2]-1])
-
-        elif flop_nums[0] - flop_nums[1] == 1 and flop_nums[1] - flop_nums[2] == 3:  # 10 9 6
-            if not flop_nums[0] == 14:
-                three_card_wrap_combis_on_flop.append([flop_nums[0]+3, flop_nums[0]+2, flop_nums[0]+1])
-                three_card_wrap_combis_on_flop.append([flop_nums[0]+2, flop_nums[0]+1, flop_nums[1]+1])
-                three_card_wrap_combis_on_flop.append([flop_nums[0]+1, flop_nums[1]-1, flop_nums[1]-2])
-                three_card_wrap_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2, flop_nums[2]-1])
-            else:
-                three_card_wrap_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2, flop_nums[2]-1])
+                three_card_wrap_combis_on_flop.append([flop_nums[0]-1, flop_nums[0]-2, flop_nums[1]-1])
+        # 13 7 4
+        if flop_nums[1] - flop_nums[2] == 3 and flop_nums[0] - flop_nums[1] > 1:
+            # no edge case here, because if flop_nums[1] == 14, then the first two card, 14, are paired...
+            three_card_wrap_combis_on_flop.append([flop_nums[1]+1, flop_nums[1]-1, flop_nums[1]-2])
+            three_card_wrap_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2, flop_nums[2]-1])
             closed_wrap = False
+
+        # 10 9 2 - the third card must be lower than 6, otherwise made straight is on board
+        if flop_nums[0] - flop_nums[1] == 1 and flop_nums[1] - flop_nums[2] > 3:
+            if flop[0] == 14:  # 14 13 2
+                three_card_wrap_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2, flop_nums[1]-3])
+            elif flop[0] == 13:  # 13 12 2
+                three_card_wrap_combis_on_flop.append([flop_nums[0]+1, flop_nums[1]-1, flop_nums[1]-2])
+                three_card_wrap_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2, flop_nums[1]-3])
+            else:
+                three_card_wrap_combis_on_flop.append([flop_nums[0]+3, flop_nums[0]+2, flop_nums[0]+1])
+                three_card_wrap_combis_on_flop.append([flop_nums[0]+2, flop_nums[0]+1, flop_nums[1]-1])
+                three_card_wrap_combis_on_flop.append([flop_nums[0]+1, flop_nums[1]-1, flop_nums[1]-2])
+                three_card_wrap_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2, flop_nums[1]-3])
+        # 13 8 7 - first two cards must have difference of at least 4, otherwise made straight is on board
+        if flop_nums[0] - flop_nums[1] > 3 and flop_nums[1] - flop_nums[2] == 1:
+            # no edge case here - I've checked, flop_nums[1] cannot be 14 or 13
+            three_card_wrap_combis_on_flop.append([flop_nums[1]+3, flop_nums[1]+2, flop_nums[1]+1])
+            three_card_wrap_combis_on_flop.append([flop_nums[1]+2, flop_nums[1]+1, flop_nums[2]-1])
+            three_card_wrap_combis_on_flop.append([flop_nums[1]+1, flop_nums[2]-1, flop_nums[2]-2])
+            three_card_wrap_combis_on_flop.append([flop_nums[2]-1, flop_nums[2]-2, flop_nums[2]-3])
 
         if not three_card_wrap_combis_on_flop:
             return False, None, []
@@ -401,27 +419,27 @@ class AnalyseMyHandOnFlop(FlopHelper):
 
     def __init__(self, stack_tracker, SPR_tracker, guy_to_right_bet_size,
                  positions_of_players_to_act_ahead_of_me,
-                 pot_size, my_position, num_list, suit_list, big_blind, empty_seat_tracker):
+                 pot_size, my_position, num_list, suit_list, big_blind):
         # As a learning point, the order of the below matters; if you use an attribute in a function before
         # the attribute was initialised, you will of course get an error.
         FlopHelper.__init__(self)
 
         # static information
         self.my_position = my_position
-        self.empty_seat_tracker = empty_seat_tracker
         self.num_list = num_list
         self.suit_list = suit_list
         self.big_blind = big_blind
-
-        self.guy_to_right_bet_size = guy_to_right_bet_size  # it is a float, it is 0 if checked.
+        # dynamic information
         self.positions_of_players_to_act_ahead_of_me = positions_of_players_to_act_ahead_of_me
-
-        self.pot_size = pot_size
+        self.guy_to_right_bet_size = guy_to_right_bet_size
         self.SPR_tracker = SPR_tracker
+        self.pot_size = pot_size
+        self.stack_tracker = stack_tracker
+
         self.flop1_nums = [card[0] for card in self.flop1]
         self.flop2_nums = [card[0] for card in self.flop2]
 
-        # Helpers; checks if I have: (nut flush draw, set, check_raise
+        # Helpers; checks if I have: (nut flush draw, set, check_raise)
         self.flopped_nut_flush_draw_generator = self.helper_flopped_nut_flush_draw()
         self.flopped_nut_flush_draw_flop1 = self.flopped_nut_flush_draw_generator[0]
         self.flopped_nut_flush_draw_flop2 = self.flopped_nut_flush_draw_generator[1]
@@ -926,4 +944,4 @@ class AnalyseMyHandOnFlop(FlopHelper):
 # x = AnalyseMyHandOnFlop()
 # AnalyseMyHandOnFlop.organise_flop('whatever')
 
-x = FlopHelper(5, [10, 6, 5], ['S', 'S', 'S'])
+x = FlopHelper()

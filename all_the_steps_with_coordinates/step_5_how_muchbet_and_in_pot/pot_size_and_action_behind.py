@@ -62,19 +62,14 @@ def read_colour_of_billboard_to_determine_action_of_each_player(position_of_play
 
 			if B > 100 and G > 100 and R > 100:
 				num_of_white_pixels += 1
-
 			if B > G > R:
 				num_of_blue_pixel += 1
-
 			if abs(G-R) >= 40 and abs(G-B) >= 40:
 				num_of_green_pixel += 1
-
 			if R > 120 and G < 120 and B > 120:
 				num_of_pink_pixel += 1
-
 			if R > 100 and G > 100 and B < 100:
 				num_of_orange_pixels += 1
-
 			if abs(R-G) <= 10 and abs(G-B) <= 10 and abs(R-B) <= 10:
 				num_of_grey_pixels += 1
 
@@ -110,6 +105,7 @@ class PotSizeAndActionBehindMe:
 		self.fold_tracker = fold_tracker
 
 		self.scan_action_of_the_table_f = self.scan_action_of_the_table()
+		self.pot_size_f = self.pot_size()
 
 		"""
 		The below are the 'real' functions, all other functions are used to support these:
@@ -148,18 +144,33 @@ class PotSizeAndActionBehindMe:
 
 		# VIDEO COORDIANTES
 		# My position
-		image1 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image1.png", region=(880, 1274, 83, 28))
+		# image1 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image1.png", region=(880, 1274, 83, 28))
+		# # Guy to my left
+		# image2 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image2.png", region=(644, 956, 83, 25))
+		# # Guy two to left
+		# image3 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image3.png", region=(693, 550, 83, 22))
+		# # Guy top of screen
+		# image4 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image4.png", region=(885, 312, 81, 22))
+		# # Guy top + 1
+		# image5 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image5.png", region=(1134, 550, 81, 22))
+		# # Guy top + 2
+		# image6 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image6.png", region=(1182, 957, 81, 22))
+		# # image1 will always be my stack, then we go clockwise round
+
+		# REAL APP COORDINATES
+		image1 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image1.png", region=(888, 1274, 83, 30))
 		# Guy to my left
-		image2 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image2.png", region=(644, 956, 83, 25))
+		image2 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image2.png", region=(652, 956, 83, 27))
 		# Guy two to left
-		image3 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image3.png", region=(693, 550, 83, 22))
+		image3 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image3.png", region=(701, 550, 83, 24))
 		# Guy top of screen
-		image4 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image4.png", region=(885, 312, 81, 22))
+		image4 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image4.png", region=(893, 312, 81, 24))
 		# Guy top + 1
-		image5 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image5.png", region=(1134, 550, 81, 22))
+		image5 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image5.png", region=(1142, 550, 81, 24))
 		# Guy top + 2
-		image6 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image6.png", region=(1182, 957, 81, 22))
+		image6 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image6.png", region=(1190, 957, 81, 24))
 		# image1 will always be my stack, then we go clockwise round
+		images = [image1, image2, image3, image4, image5, image6]
 
 		# image1.show()
 		# image2.show()
@@ -167,21 +178,7 @@ class PotSizeAndActionBehindMe:
 		# image4.show()
 		# image5.show()
 		# image6.show()
-
-		# REAL APP COORDINATES
-		# image1 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image1.png", region=(880, 1274, 83, 30))
-		# # Guy to my left
-		# image2 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image2.png", region=(644, 956, 83, 27))
-		# # Guy two to left
-		# image3 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image3.png", region=(693, 550, 83, 24))
-		# # Guy top of screen
-		# image4 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image4.png", region=(885, 312, 81, 24))
-		# # Guy top + 1
-		# image5 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image5.png", region=(1134, 550, 81, 24))
-		# # Guy top + 2
-		# image6 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/image6.png", region=(1182, 957, 81, 24))
-		# # image1 will always be my stack, then we go clockwise round
-		# images = [image1, image2, image3, image4, image5, image6]
+		# breakpoint()
 
 		# image paths
 		image1 = f"{sys.path[0]}/photo_dump/image1.png"
@@ -198,43 +195,34 @@ class PotSizeAndActionBehindMe:
 	def pot_size(pre_flop=False):
 		"""
 		This function simply returns the size of the pot; post flop it takes a ss of the pot.
-
 		Pre_flop it will simply sum the action_so_far dictionary values.
-
 		I need to calculate it pre-flop because of the SPR tracker, which uses the pot size to calculate SPR.
-
 		crop_rectangle tuple represents (LEFT, UPPER, RIGHT, LOWER).
 		"""
-
 		if pre_flop:
 			# For pre_flop we don't need pot size; stack_tracker, fold_trackerthe way we calculate whether it's been bet, 3-bet or more
 			# is to compare the amount on our button to the blinds.
 			return False
-
 		else:
 			# VIDEO COORDINATES
-			image = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pot_size.png", region=(917, 655, 70, 28))
+			# image = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pot_size.png", region=(917, 655, 70, 28))
 			# image.show()
 
 			# REAL APP COORDINATES
-			# image = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pot_size.png", region=(917, 625, 70, 30))
+			image = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pot_size.png", region=(927, 625, 70, 30))
 			# image.show()
 
 			im = Image.open(f"{sys.path[0]}/photo_dump/pot_size.png")
-
 			# The printscreen number is small so we enlarge it so number reader can detect num correctly
 			new_im = im.resize((109, 45))
 			# new_im.show()
 			pot_size = pytesseract.image_to_string(new_im, config='--psm 6')
-
 			final_pot_size = ''
-
 			for char in pot_size:
 				if char.isdigit() or char == '.':
 					final_pot_size += char
 			try:
 				return float(final_pot_size)
-
 			except:
 				print('something went wrong with pot size string to float conversion; check if youre running pre flop there is no pot!')
 				breakpoint()
@@ -256,7 +244,7 @@ class PotSizeAndActionBehindMe:
 		# ss.show()
 
 		# bet size on my button - APP COORDINATES
-		# ss = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/largest_bet_size_my_button.png", region=(889, 1607, 149, 43))
+		# ss = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/largest_bet_size_my_button.png", region=(892, 1607, 149, 41))
 		# ss.show()
 
 		image_path = f"{sys.path[0]}/photo_dump/largest_bet_size_my_button.png"
@@ -269,11 +257,12 @@ class PotSizeAndActionBehindMe:
 		This function will scan the number below the pot number, and return it.
 		"""
 		# VIDEO COORDINATES
-		total_bet_amount_under_pot = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pot_size.png", region=(917, 683, 70, 32))
+		# total_bet_amount_under_pot = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pot_size.png", region=(917, 683, 70, 32))
 		# total_bet_amount_under_pot.show()
-		# real app coordinates
-		# total_bet_amount_under_pot = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pot_size.png", region=(917, 683, 70, 34))
 
+		# real app coordinates
+		total_bet_amount_under_pot = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pot_size.png", region=(925, 683, 70, 32))
+		total_bet_amount_under_pot.show()
 		im = Image.open(f"{sys.path[0]}/photo_dump/pot_size.png")
 		new_im = im.resize((109, 45))
 		# new_im.show()
@@ -304,25 +293,25 @@ class PotSizeAndActionBehindMe:
 
 		return total_bet_amount_under_pot
 
-	def how_much_can_i_raise_to(self):
+	def how_much_can_i_raise_to(self, guy_to_right_bet_size):
 		"""
-		This function scans the number below the pot amount - and this number represents what the total pot is at
+		This function scans the number below the pot amount - this number represents what the total pot is at
 		the moment - including all of the bets before me. Whereas the top number represents the pot before any
 		betting in the current round.
 
-		This function will scan this bottom number and see what it is.
+		This function will scan this bottom number.
 		It then determines what amount I can raise to if I wanted to raise, by doing the following calculation:
-
 		1) amount_i_can_raise_to = Amount on my button x 3 + (the total pot amount including current bets - amount on my button button) ;
-
 		2) if Amount on my button = 'Check', then I can just bet the pot of course.
 
 		crop_rectangle tuple represents (LEFT, UPPER, RIGHT, LOWER).
 		"""
 		total_bet_amount = self.total_bet_amount_under_pot()
 
-		# it has been checked to me
-
+		if not guy_to_right_bet_size:
+			return self.pot_size_f
+		else:
+			return guy_to_right_bet_size*3 + (total_bet_amount - guy_to_right_bet_size)
 
 	def calculate_SPR(self, how_much_can_i_bet_or_raise_to):
 		"""
@@ -464,9 +453,9 @@ def read_white_text_on_image_my_button_bet_size(image_path, ss, stack_tracker, f
 
 
 stack_tracker = {1: 633.46, 2: 58.19, 3: 271.84, 4: 311.57, 5: 342.21, 6: 382.34}
-fold_tracker = {1: False, 2: True, 3: False, 4: False, 5: False, 6: False}
-x = PotSizeAndActionBehindMe(4, fold_tracker, stack_tracker)
-# print(f'total bet amount under the pot is: {x.how_much_can_i_raise_to()}')
+fold_tracker = {1: False, 2: False, 3: False, 4: False, 5: False, 6: False}
+x = PotSizeAndActionBehindMe(1, fold_tracker, stack_tracker)
+# print(f'total bet amount under the pot is: {x.total_bet_amount_under_pot()}')
 
 # print(f'amount on my button is:{x.scan_call_button_to_see_bet_amount()}')
 
@@ -477,7 +466,7 @@ x = PotSizeAndActionBehindMe(4, fold_tracker, stack_tracker)
 # print(f'the pot size is: {x.pot_size()}')
 
 # For the below two functions, 'how_much_I_can_raise_to' are the arguments being passed into the function
-# print(f'SPR of the table: {x.calculate_SPR(0)}')
+print(f'SPR of the table: {x.calculate_SPR(0)}')
 # print(f'are there players to act ahead of me: {x.are_there_players_to_act_ahead_of_me(0)}')
 
 

@@ -1085,35 +1085,8 @@ class AnalyseMyHandOnRiver(AnalyseMyHandOnTurn):
         6. flopped_nut_flush
         """
 
-        # board paired on flop
-        if flopped[:6] == 'bpof_':
-            print('going into board_pairing river analysis')
-            return self.board_paired_on_flop_river_play(flopped, card_helper)
-
-        # flush completed on flop
-        if flopped[:6] == 'fcof_':
-            print('going into flush completed river analysis')
-            return self.flush_completed_on_flop_river_play(flopped, card_helper)
-
-        # Before going into straight completing on flop, check if board paired or flush got there on the river
-        if flopped[:6] == 'bpot_':
-            return self.board_paired_on_turn_exploit_river_play(flopped, card_helper)
-
-        if flopped[:6] == 'fcot_':
-            return self.flush_completed_on_turn_play_river_exploit(flopped, card_helper)
-
-        # straight completed on flop
-        if flopped[:6] == 'scof_':
-            return self.straight_completed_on_flop_river_play(flopped, card_helper)
-
-        # straight completed on turn
-        if flopped[:6] == 'scot_':
-            return self.straight_completed_on_turn_river_play(flopped, card_helper)
-
-        # straight completed on river
-        if self.did_any_straight_complete_on_river:
-            return self.straight_completed_on_river_river_play(flopped, card_helper)
-
-        if flopped[:6] == 'dbof_':
-            return self.dry_board_on_flop_river_play(flopped, card_helper)
-
+        if self.guy_to_right_bet_size <= 3:
+            return 'call'
+        if self.guy_to_right_bet_size == 0:
+            return 'check'
+        return 'fold'

@@ -173,18 +173,18 @@ def generate_num_list_from_my_hand():
 	suit_list = []
 
 	# Video coordinates
-	pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(535, 126, 158, 37))
-	pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(543, 127, 158, 37))
-	pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(543, 126, 159, 37))
-	ss_of_my_hand = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(529, 123, 158, 37))
-	ss_of_my_hand.show()
+	# pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(535, 126, 158, 37))
+	# pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(543, 127, 158, 37))
+	# pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(543, 126, 159, 37))
+	# ss_of_my_hand = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(529, 123, 158, 37))
+	# ss_of_my_hand.show()
 
 	# THIS IS FOR num_list - real app coordinates
-	# pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(535, 126, 158, 39))
-	# pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(543, 127, 158, 39))
-	# pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(543, 126, 159, 39))
-	# ss_of_my_hand = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(529, 123, 158, 39))
-	# ss_of_my_hand.show()
+	# pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(538, 126, 158, 39))
+	# pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(546, 127, 158, 39))
+	# pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(546, 126, 159, 39))
+	ss_of_my_hand = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(537, 123, 158, 39))
+	ss_of_my_hand.show()
 
 	current_num = pytesseract.image_to_string(ss_of_my_hand, config='--psm 6')
 	# current_num looks like this here: 'KJ0632\n' ; there's always that escape thing at the end, so ignore it.

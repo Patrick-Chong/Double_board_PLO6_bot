@@ -135,28 +135,44 @@ class PlayersLeftInPot:
 
 		fold_tracker = dict()
 
+		# VIDEO coordinates
 		# My position
 		image1 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/img1.png", region=(563, 1359, 76, 33))
 		image1_path = f"{sys.path[0]}/photo_dump/img1.png"
-
 		# Guy to my left 
 		image2 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/img2.png", region=(547, 1044, 82, 47))
 		image2_path = f"{sys.path[0]}/photo_dump/img2.png"
-
 		# Guy two to left
 		image3 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/img3.png", region=(600, 635, 82, 47))
 		image3_path = f"{sys.path[0]}/photo_dump/img3.png"
-
 		# Guy top of screen
 		image4 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/img4.png", region=(974, 390, 82, 47))
 		image4_path = f"{sys.path[0]}/photo_dump/img4.png"
-
 		# Guy top of screen + 1
 		image5 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/img5.png", region=(1227, 630, 82, 47))
 		image5_path = f"{sys.path[0]}/photo_dump/img5.png"
-
 		# Guy top of screen + 2
 		image6 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/img6.png", region=(1276, 1047, 82, 47))
+		image6_path = f"{sys.path[0]}/photo_dump/img6.png"
+
+		# REAL APP coordinates
+		# My position
+		image1 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/img1.png", region=(571, 1359, 76, 33))
+		image1_path = f"{sys.path[0]}/photo_dump/img1.png"
+		# Guy to my left
+		image2 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/img2.png", region=(557, 1044, 82, 47))
+		image2_path = f"{sys.path[0]}/photo_dump/img2.png"
+		# Guy two to left
+		image3 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/img3.png", region=(608, 635, 82, 47))
+		image3_path = f"{sys.path[0]}/photo_dump/img3.png"
+		# Guy top of screen
+		image4 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/img4.png", region=(982, 390, 82, 47))
+		image4_path = f"{sys.path[0]}/photo_dump/img4.png"
+		# Guy top of screen + 1
+		image5 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/img5.png", region=(1235, 630, 82, 47))
+		image5_path = f"{sys.path[0]}/photo_dump/img5.png"
+		# Guy top of screen + 2
+		image6 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/img6.png", region=(1284, 1044, 82, 47))
 		image6_path = f"{sys.path[0]}/photo_dump/img6.png"
 
 		# image1.show()
@@ -206,7 +222,7 @@ class PlayersLeftInPot:
 
 
 x = PlayersLeftInPot()
-print(f"fold_tracker is {x.detect_if_cards_in_hand(1, {1: False, 2: False, 3: False, 4: False, 5: False, 6: False})}")
+print(f"fold_tracker is {x.detect_if_cards_in_hand(2, {1: False, 2: False, 3: False, 4: False, 5: False, 6: False})}")
 
 # x = DetectEmptySeat()
 # print(x.detect_empty_seat(2))

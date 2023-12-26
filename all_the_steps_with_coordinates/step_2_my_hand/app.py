@@ -8,4 +8,4 @@ def run_num_list_suit_list():
     return num_list, suit_list
 
 
-print(run_num_list_suit_list())
+run_num_list_suit_list()

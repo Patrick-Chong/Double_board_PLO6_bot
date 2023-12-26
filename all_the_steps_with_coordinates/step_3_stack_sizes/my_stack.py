@@ -23,43 +23,43 @@ def get_stack_sizes(my_position, fold_tracker):
 
 	stack_tracker = dict()
 
-	# my stack - video coordinates
-	stack1 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack1.png", region=(909, 1475, 94, 28))
-
-	# guy to my left
-	stack2 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack2.png", region=(605, 1145, 94, 28))
-
-	# guy two to my left
-	stack3 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack3.png", region=(654, 725, 94, 28))
-
-	# guy top of screen
-	stack4 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack4.png", region=(909, 480, 94, 28))
-
-	# top of screen + 1
-	stack5 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack5.png", region=(1162, 727, 94, 26))
-
-	# top of screen + 2
-	stack6 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack6.png", region=(1210, 1145, 94, 28))
+	# # my stack - video coordinates
+	# stack1 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack1.png", region=(909, 1475, 94, 28))
+	#
+	# # guy to my left
+	# stack2 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack2.png", region=(605, 1145, 94, 28))
+	#
+	# # guy two to my left
+	# stack3 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack3.png", region=(654, 725, 94, 28))
+	#
+	# # guy top of screen
+	# stack4 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack4.png", region=(909, 480, 94, 28))
+	#
+	# # top of screen + 1
+	# stack5 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack5.png", region=(1162, 727, 94, 26))
+	#
+	# # top of screen + 2
+	# stack6 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack6.png", region=(1210, 1145, 94, 28))
 
 
 	# my stack - real app coordinates
 	# my stack - video coordinates
-	# stack1 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack1.png", region=(909, 1475, 94, 30))
-	#
-	# # guy to my left
-	# stack2 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack2.png", region=(605, 1145, 94, 30))
-	#
-	# # guy two to my left
-	# stack3 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack3.png", region=(654, 725, 94, 30))
-	#
-	# # guy top of screen
-	# stack4 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack4.png", region=(909, 480, 94, 30))
-	#
-	# # top of screen + 1
-	# stack5 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack5.png", region=(1162, 727, 94, 30))
-	#
-	# # top of screen + 2
-	# stack6 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack6.png", region=(1210, 1145, 94, 30))
+	stack1 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack1.png", region=(917, 1475, 94, 30))
+
+	# guy to my left
+	stack2 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack2.png", region=(613, 1145, 94, 30))
+
+	# guy two to my left
+	stack3 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack3.png", region=(662, 725, 94, 30))
+
+	# guy top of screen
+	stack4 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack4.png", region=(917, 480, 94, 30))
+
+	# top of screen + 1
+	stack5 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack5.png", region=(1170, 727, 94, 30))
+
+	# top of screen + 2
+	stack6 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack6.png", region=(1220, 1145, 94, 30))
 
 	# stack1.show()
 	# stack2.show()
@@ -73,11 +73,8 @@ def get_stack_sizes(my_position, fold_tracker):
 	for i in range(1, 7):
 		# stack1 will always be my stack.
 		im = Image.open(f"{sys.path[0]}/photo_dump/screenshots_of_stacks/stack{i}.png")
-
 		new_im = im.resize((100, 45))
-
-		new_im.show()
-
+		# new_im.show()
 		current_stack = pytesseract.image_to_string(new_im, config='--psm 6')
 		stack_tracker[current_position] = current_stack
 		current_position = (current_position + 1) % 7
@@ -112,5 +109,5 @@ def get_stack_sizes(my_position, fold_tracker):
 	return stack_tracker
 
 
-print(get_stack_sizes(1, {1: False, 2: False, 3: True, 4: False, 5: False, 6: False}))
+print(get_stack_sizes(6, {1: False, 2: True, 3: False, 4: True, 5: False, 6: False}))
 # print(all_in_checker({1: 'Fold', 2: 8.26, 3: 'Fold', 4: 'Fold', 5: '/(', 6: 60.30}, 6, 5))

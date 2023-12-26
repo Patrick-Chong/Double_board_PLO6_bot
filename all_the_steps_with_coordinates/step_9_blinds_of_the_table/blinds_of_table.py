@@ -31,12 +31,14 @@ def table_blinds():
 	So if the blinds are 0.20/0.40, as long as this is in the end result then it is fine.
 	"""
 
-	# It says the table blinds in the middle of the table, so that is what I scan
+	# VIDEO coordinates
+	blinds = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/table_blinds.png", region=(895, 1029, 120, 36))
+
+	# real app coordinates
 	blinds = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/table_blinds.png", region=(895, 1029, 120, 36))
 
 	blinds.show()
 	blinds = blinds.resize((160, 40))
-
 	blinds.save(f"{sys.path[0]}/photo_dump/table_blindss.png")
 	blinds = f"{sys.path[0]}/photo_dump/table_blindss.png"
 

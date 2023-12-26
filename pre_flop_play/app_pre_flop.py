@@ -156,7 +156,6 @@ class RunPreFlop(ShouldWePlayThisPreFlopHand):
 
 		limped_or_3_bet_to_me_pre_flop = self.limped_or_3_bet_to_me_pre_flop()
 		action = self.action_pre_flop(limped_or_3_bet_to_me_pre_flop)
-
 		extra_information['three_bet_pre_flop'] = True if limped_or_3_bet_to_me_pre_flop == 'three_bet' else False
 
 		return action, extra_information
