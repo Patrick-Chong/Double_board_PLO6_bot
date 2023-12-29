@@ -81,4 +81,5 @@ class FlopTurnRiver:
 
 
 x = FlopTurnRiver()
-print(x.determine_street())
+print(x)
+# print(x.determine_street())

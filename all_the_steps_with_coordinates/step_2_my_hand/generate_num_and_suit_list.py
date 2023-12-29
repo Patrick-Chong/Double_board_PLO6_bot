@@ -184,7 +184,7 @@ def generate_num_list_from_my_hand():
 	# pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(546, 127, 158, 39))
 	# pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(546, 126, 159, 39))
 	ss_of_my_hand = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/my_hand.png", region=(537, 123, 158, 39))
-	ss_of_my_hand.show()
+	# ss_of_my_hand.show()
 
 	current_num = pytesseract.image_to_string(ss_of_my_hand, config='--psm 6')
 	# current_num looks like this here: 'KJ0632\n' ; there's always that escape thing at the end, so ignore it.
@@ -290,5 +290,5 @@ def get_num_list(num_list_with_face_cards_to_be_converted_to_numbers):
 
 	return final_num_list  # e.g. [14, 10, 5, 4, 3, 2]
 
-num_list, suit_list = generate_num_list_from_my_hand()
-print(num_list, suit_list)
+# num_list, suit_list = generate_num_list_from_my_hand()
+# print(num_list, suit_list)

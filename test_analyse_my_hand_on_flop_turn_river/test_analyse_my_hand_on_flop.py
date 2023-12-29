@@ -8,7 +8,7 @@ import mock
 from analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_flop import FlopHelper, AnalyseMyHandOnFlop
 
 
-x = FlopHelper(5, [10, 6, 5], ['S', 'S', 'S'])
+x = FlopHelper()
 
 
 class TestFlopHelper:
@@ -18,7 +18,7 @@ class TestFlopHelper:
         ([[14, 'S'], [13, 'S'], [5, 'C']], [False, None])
 
     ])
-    def test_organise_flop(self, flop, expected_output):
+    def test_board_paired_on_flop(self, flop, expected_output):
         actual_output = x.is_any_board_paired_on_flop(flop)
         assert actual_output[0] == expected_output[0]
         assert actual_output[1] == expected_output[1]

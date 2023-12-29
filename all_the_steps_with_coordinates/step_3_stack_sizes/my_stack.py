@@ -88,10 +88,8 @@ def get_stack_sizes(my_position, fold_tracker):
 		if fold_tracker[key]:  # they have folded or seat is empty
 			stack_tracker[key] = 0
 			continue
-
 		stack = stack_tracker.get(key)
 		hand = ''
-
 		for num in stack:
 			try:
 				int_num = int(num)
@@ -109,5 +107,5 @@ def get_stack_sizes(my_position, fold_tracker):
 	return stack_tracker
 
 
-print(get_stack_sizes(6, {1: False, 2: True, 3: False, 4: True, 5: False, 6: False}))
+# print(get_stack_sizes(6, {1: False, 2: True, 3: False, 4: True, 5: False, 6: False}))
 # print(all_in_checker({1: 'Fold', 2: 8.26, 3: 'Fold', 4: 'Fold', 5: '/(', 6: 60.30}, 6, 5))

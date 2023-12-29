@@ -1,4 +1,4 @@
-from generate_num_and_suit_list import generate_num_list_from_my_hand
+from .generate_num_and_suit_list import generate_num_list_from_my_hand
 
 
 def run_num_list_suit_list():

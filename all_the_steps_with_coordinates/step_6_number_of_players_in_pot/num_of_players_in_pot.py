@@ -221,8 +221,8 @@ class PlayersLeftInPot:
 		return fold_tracker
 
 
-x = PlayersLeftInPot()
-print(f"fold_tracker is {x.detect_if_cards_in_hand(2, {1: False, 2: False, 3: False, 4: False, 5: False, 6: False})}")
+# x = PlayersLeftInPot()
+# print(f"fold_tracker is {x.detect_if_cards_in_hand(2, {1: False, 2: False, 3: False, 4: False, 5: False, 6: False})}")
 
 # x = DetectEmptySeat()
 # print(x.detect_empty_seat(2))

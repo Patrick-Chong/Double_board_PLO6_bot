@@ -24,19 +24,15 @@ def go_to_the_right_street(action, street_we_are_on, extra_information, street_c
 		print('running_pre_flop_analysis')
 		action, extra_information = run_this_on_pre_flop_app_dot_py()
 		print('finished_pre_flop_analysis')
-		# breakpoint()
-	elif street_we_are_on == '_2_on_flop':
+	elif street_we_are_on == 'on_flop':
 		print('running_on_flop_analysis')
 		action, extra_information = run_this_on_the_flop_app_dot_py(action, extra_information)
-		# breakpoint()
 	elif street_we_are_on == 'on_turn':
 		print('running_on_turn_analysis')
 		action, extra_information = run_this_on_the_turn_app_dot_py(action, extra_information)
-		# breakpoint()
 	elif street_we_are_on == 'on_river':
 		print('running_on_river_analysis')
 		action, extra_information = run_this_on_the_river_app_dot_py(action, extra_information)
-		# breakpoint()
 
 	return action, extra_information, street_count + 1
 
@@ -150,13 +146,19 @@ while True:
 	# but in video when you hover over the screen something pops up.
 
 	while check_if_my_cards_are_live():  # checked if I have folded - if so no need to run anything
+		print('we are in a live hand')
 		# generate static information
 		my_position = rfot.take_SS_and_determine_position()
 		num_list = rfot.num_list
 		suit_list = rfot.suit_list
 		empty_seat_tracker = rfot.empty_seat_tracker_f
 		big_blind = rfot.big_blind
-		if ftr.determine_street() == 'pre_flop_play':
+		print(f'my_position:{my_position}')
+		print(f'num_list:{num_list}')
+		print(f'suit_list:{suit_list}')
+		print(f'empty_seat_tracker:{empty_seat_tracker}')
+		print(f'big_blind:{big_blind}')
+		if ftr.determine_street() == 'pre_flop_play' or ftr.determine_street() == 'on_flop':
 			print('run new hand analysis')
 			run_new_hand()
 

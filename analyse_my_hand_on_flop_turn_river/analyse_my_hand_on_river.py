@@ -8,7 +8,7 @@ Wworth starting by checking what the nuts is at the start of the river analiysis
 """
 from collections import defaultdict
 
-from analyse_my_hand_on_turn import AnalyseMyHandOnTurn
+from .analyse_my_hand_on_turn import AnalyseMyHandOnTurn
 from flop_turn_river_cards import TheRiver
 TR = TheRiver()
 
@@ -1085,7 +1085,7 @@ class AnalyseMyHandOnRiver(AnalyseMyHandOnTurn):
         6. flopped_nut_flush
         """
 
-        if self.guy_to_right_bet_size <= 3:
+        if self.guy_to_right_bet_size <=7:
             return 'call'
         if self.guy_to_right_bet_size == 0:
             return 'check'

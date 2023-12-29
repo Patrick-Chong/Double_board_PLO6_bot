@@ -29,7 +29,7 @@ def check_if_my_cards_are_live():
     screenshot = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/ss_of_my_hand.png", region=(1060, 1390, 220, 58))
     ss_of_my_hand = f"{sys.path[0]}/photo_dump/ss_of_my_hand.png"
     my_hand_blacked_out = f"{sys.path[0]}/photo_dump/my_hand_blacked_out.png"
-    screenshot.show()
+    # screenshot.show()
 
     if calcdiff(ss_of_my_hand, my_hand_blacked_out) >= 50: 
         return True

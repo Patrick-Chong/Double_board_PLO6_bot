@@ -4,7 +4,7 @@ import pyautogui
 from PIL import Image
 import pytesseract
 
-from analyse_my_hand_pre_flop import ShouldWePlayThisPreFlopHand
+from .analyse_my_hand_pre_flop import ShouldWePlayThisPreFlopHand
 
 
 def read_white_text_on_image(image_path, ss):
@@ -104,7 +104,6 @@ class RunPreFlop(ShouldWePlayThisPreFlopHand):
 
 		Because before when I just
 		"""
-		folded_or_empty = ('Fold', 'Empty')
 		if self.pre_flop_bet_amount <= self.big_blind:
 			return 'limped'
 		elif self.big_blind < self.pre_flop_bet_amount <= 4 * self.big_blind:
@@ -153,11 +152,9 @@ class RunPreFlop(ShouldWePlayThisPreFlopHand):
 
 	def pre_flop_action(self):
 		extra_information = dict()  # store if someone 3-bet pre_flop
-
 		limped_or_3_bet_to_me_pre_flop = self.limped_or_3_bet_to_me_pre_flop()
 		action = self.action_pre_flop(limped_or_3_bet_to_me_pre_flop)
 		extra_information['three_bet_pre_flop'] = True if limped_or_3_bet_to_me_pre_flop == 'three_bet' else False
-
 		return action, extra_information
 
 # x = RunPreFlop()

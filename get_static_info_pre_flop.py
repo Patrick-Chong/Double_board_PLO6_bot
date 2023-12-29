@@ -70,30 +70,25 @@ class MyPositionClass:
         and determines what position we are in, relative to the button
         """
 
+        # REAL APP coordinates
         # my position
-        pos1 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos1.png", region=(831, 1308, 37, 37))
+        pos1 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos1.png", region=(844, 1336, 37, 37))
         pos1_path = f"{sys.path[0]}/photo_dump/pos1.png"
-
         # guy one to my left
-        pos2 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos2.png", region=(698, 1126, 37, 37))
+        pos2 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos2.png", region=(722, 1165, 37, 37))
         pos2_path = f"{sys.path[0]}/photo_dump/pos2.png"
-
         # guy two to my left
-        pos3 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos3.png", region=(746, 672, 37, 37))
+        pos3 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos3.png", region=(765, 745, 37, 37))
         pos3_path = f"{sys.path[0]}/photo_dump/pos3.png"
-
         # guy top of screen
-        pos4 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos4.png", region=(868, 408, 37, 37))
+        pos4 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos4.png", region=(878, 499, 37, 37))
         pos4_path = f"{sys.path[0]}/photo_dump/pos4.png"
-
         # guy top of screen + 1
-        pos5 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos5.png", region=(1137, 672, 37, 37))
+        pos5 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos5.png", region=(1129, 745, 37, 37))
         pos5_path = f"{sys.path[0]}/photo_dump/pos5.png"
-
         # guy top of screen + 2
-        pos6 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos6.png", region=(1185, 1126, 37, 37))
+        pos6 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos6.png", region=(1175, 1167, 37, 37))
         pos6_path = f"{sys.path[0]}/photo_dump/pos6.png"
-
         pos_path = [pos1_path, pos2_path, pos3_path, pos4_path, pos5_path, pos6_path]
 
         # pos1.show()
@@ -102,17 +97,13 @@ class MyPositionClass:
         # pos4.show()
         # pos5.show()
         # pos6.show()
-
         button_with = None
-
         for pos in pos_path:
             if MyPositionClass.determine_white_pixels(pos):
                 button_with = pos
-
         if not button_with:
             print('No button found, check screen position')
             breakpoint()
-
         if button_with == pos1_path:
             return 6
         elif button_with == pos2_path:
@@ -140,14 +131,11 @@ class RunFirstOneTime(MyPositionClass):
     def get_empty_seat_tracker(my_position):
         DES = DetectEmptySeat()
         empty_seat_tracker = DES.detect_empty_seat(my_position)
-        # print(f"empty seat tracker: {empty_seat_tracker}")
-
         # Determine how many players are on table by counting non-empty seats
         no_players_on_table = 0
         for seat in empty_seat_tracker:
             if not empty_seat_tracker[seat]:
                 no_players_on_table += 1
-
         return empty_seat_tracker
 
     @staticmethod
@@ -155,13 +143,14 @@ class RunFirstOneTime(MyPositionClass):
         blinds_of_table = table_blinds()
         possible_table_blinds = ('0.20/0.40', '0.30/0.60', '0.5/1', '1/2', '2/4')
         possible_big_blinds = {'0.20/0.40': '0.4', '0.30/0.60': '0.6', '0.5/1': '1', '1/2': '2', '2/4': '4'}
-        for tb in possible_table_blinds:
-            if tb in blinds_of_table:
-                return float(possible_big_blinds[tb])
-        else:
-            print('Could not determine table blinds')
-            breakpoint()
+        return 0.4
+        # for tb in possible_table_blinds:
+        #     if tb in blinds_of_table:
+        #         return float(possible_big_blinds[tb])
+        # else:
+        #     print('Could not determine table blinds')
+        #     breakpoint()
 
 
-# MPC = MyPositionClass()
-# print(MPC.take_SS_and_determine_position())
+MPC = MyPositionClass()
+print(MPC.take_SS_and_determine_position())

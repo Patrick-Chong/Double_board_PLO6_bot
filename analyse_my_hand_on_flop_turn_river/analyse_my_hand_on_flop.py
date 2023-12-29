@@ -9,7 +9,7 @@ class FlopHelper:
     # Note this class can and should be used on the turn and river too!
     def __init__(self):
 
-        self.flop1, self.flop2 = FlopHelper.organise_flop()
+        self.flop1, self.flop2 = self.organise_flop()
         # self.flop1 = [[14, 'S'], [6, 'S'], [5, 'C']]
 
         # ANYTHING COMPLETED ON FLOP (board_pair, flush, or straight?)
@@ -66,8 +66,7 @@ class FlopHelper:
         self.is_straight_draw_on_flop2 = self.straight_draw_on_flop_generator[0]
         self.two_card_straight_draw_combis_on_flop2 = self.straight_draw_on_flop_generator[1]
 
-    @staticmethod
-    def organise_flop():
+    def organise_flop(self):
         """
         Note that when I sort the num of suit, the way I wrote it, the corresponding suits get moved together,
         which is extremely important!
@@ -561,7 +560,7 @@ class AnalyseMyHandOnFlop(FlopHelper):
             action = 'bet'
 
         # special case if it was 3-bet pre_flop and ace on flop, if I don't have at least 5/5 rating combo, FOLD IT.
-        if extra_information['three_bet_pre_flop']:
+        if extra_information.get('three_bet_pre_flop'):
             if self.flop1[0][0] == 14 or self.flop2[0][0] == 14:
                 if not action == 'bet':  # I have a 5/5 rating combo
                     action = 'fold'
@@ -944,4 +943,4 @@ class AnalyseMyHandOnFlop(FlopHelper):
 # x = AnalyseMyHandOnFlop()
 # AnalyseMyHandOnFlop.organise_flop('whatever')
 
-x = FlopHelper()
+# x = FlopHelper()

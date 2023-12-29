@@ -261,8 +261,8 @@ class PotSizeAndActionBehindMe:
 		# total_bet_amount_under_pot.show()
 
 		# real app coordinates
-		total_bet_amount_under_pot = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pot_size.png", region=(925, 683, 70, 32))
-		total_bet_amount_under_pot.show()
+		total_bet_amount_under_pot = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pot_size.png", region=(927, 683, 70, 32))
+		# total_bet_amount_under_pot.show()
 		im = Image.open(f"{sys.path[0]}/photo_dump/pot_size.png")
 		new_im = im.resize((109, 45))
 		# new_im.show()
@@ -311,6 +311,7 @@ class PotSizeAndActionBehindMe:
 		if not guy_to_right_bet_size:
 			return self.pot_size_f
 		else:
+			breakpoint()
 			return guy_to_right_bet_size*3 + (total_bet_amount - guy_to_right_bet_size)
 
 	def calculate_SPR(self, how_much_can_i_bet_or_raise_to):
@@ -452,9 +453,9 @@ def read_white_text_on_image_my_button_bet_size(image_path, ss, stack_tracker, f
 		return float(bet_amount)
 
 
-stack_tracker = {1: 633.46, 2: 58.19, 3: 271.84, 4: 311.57, 5: 342.21, 6: 382.34}
-fold_tracker = {1: False, 2: False, 3: False, 4: False, 5: False, 6: False}
-x = PotSizeAndActionBehindMe(1, fold_tracker, stack_tracker)
+# stack_tracker = {1: 633.46, 2: 58.19, 3: 271.84, 4: 311.57, 5: 342.21, 6: 382.34}
+# fold_tracker = {1: False, 2: False, 3: False, 4: False, 5: False, 6: False}
+# x = PotSizeAndActionBehindMe(1, fold_tracker, stack_tracker)
 # print(f'total bet amount under the pot is: {x.total_bet_amount_under_pot()}')
 
 # print(f'amount on my button is:{x.scan_call_button_to_see_bet_amount()}')
@@ -466,7 +467,7 @@ x = PotSizeAndActionBehindMe(1, fold_tracker, stack_tracker)
 # print(f'the pot size is: {x.pot_size()}')
 
 # For the below two functions, 'how_much_I_can_raise_to' are the arguments being passed into the function
-print(f'SPR of the table: {x.calculate_SPR(0)}')
+# print(f'SPR of the table: {x.calculate_SPR(0)}')
 # print(f'are there players to act ahead of me: {x.are_there_players_to_act_ahead_of_me(0)}')
 
 
