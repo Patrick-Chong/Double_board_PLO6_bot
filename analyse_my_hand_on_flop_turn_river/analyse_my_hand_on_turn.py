@@ -9,6 +9,12 @@ paired board, made flush, wrap draw, etc.
 - Anyone ahead of me to act
 - My hand rating on turn
 
+Hand rating breakdown on turn:
+- Rating of 7 on either board means blast regardless
+- Rating of 6.5 means if I have strong hand on other board, like a 6 BLAST
+- 6 on both boards is bet if not bet before me, otherwise call
+- Anything less is check fold.
+
 Consider exploit later.
 """
 
@@ -57,11 +63,11 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
         self.flush_complete_on_turn = AnalyseMyHandOnTurn.flush_completed_on_turn(self.turn1)
         self.did_flush_completed_on_turn1 = self.flush_complete_on_turn[0]
         self.nut_flush_nums_turn1 = self.flush_complete_on_turn[1]
-        self.suit_of_flush_turn1 = self.flush_complete_on_turn[2]
+        self.nut_flush_suit_turn1 = self.flush_complete_on_turn[2]
         self.flush_complete_on_turn = AnalyseMyHandOnTurn.flush_completed_on_turn(self.turn2)
         self.did_flush_completed_on_turn2 = self.flush_complete_on_turn[0]
         self.nut_flush_nums_turn2 = self.flush_complete_on_turn[1]
-        self.suit_of_flush_turn2 = self.flush_complete_on_turn[2]
+        self.nut_flush_suit_turn2 = self.flush_complete_on_turn[2]
         # Did straight complete
         self.any_straight_completed_on_turn_generator = AnalyseMyHandOnTurn.any_straight_completed_on_turn(self.turn1)
         self.did_straight_complete_on_turn1 = self.any_straight_completed_on_turn_generator[0]
@@ -167,7 +173,7 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
         There is a made straight only if the gap between the 3 cards is no more than 4.
         e.g. 10, 7, 6 or 10, 8, 6 or 10 9 8
 
-        self.turn1 looks like [[13, 'S'], [10, 'C'] [9, 'S'], [8, 'C']]
+        self.turn1 looks like [[13, 'S'], [10, 'C'], [9, 'S'], [8, 'C']]
         """
         two_card_completing_straights = []
         turn_numbers = [card[0] for card in turn]
@@ -243,11 +249,14 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
 
         Also, haven't considered lower wrap with ace! E.g. if 14 13 5 2 ; I consider 4,3,1 to be a wrap, but I need
         to map 1 to ACE! - something to do in future.
+
+        Also, note that I think in some cases we go over 14, and some go under 1 but that's okay -
+        it just won't be found in my hand (num_list), so it gets ignored.
         """
         turn_nums = [card[0] for card in turn]
         three_card_wrap_combis_on_turn = []
 
-        # 12 8 3 2 or 12 9 5 4 or 12 11 6 2
+        # 12 8 3 2 or 12 9 5 4 or 12 11 6 2 - 3 gapper wrap
         if turn_nums[0] - turn_nums[1] == 4:
             three_card_wrap_combis_on_turn.append([turn_nums[0]-1, turn_nums[0]-2, turn_nums[0]-3])
         if turn_nums[1] - turn_nums[2] == 4:
@@ -255,7 +264,7 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
         if turn_nums[2] - turn_nums[3] == 4:
             three_card_wrap_combis_on_turn.append([turn_nums[2]-1, turn_nums[2]-2, turn_nums[2]-3])
 
-        # 10 7 5 2 - the third card must be 5 or lower or a made straight is on board
+        # 10 7 5 2 - the third card must be 5 or lower or a made straight is on board - 2 gapper wrap
         if turn_nums[0] - turn_nums[1] == 3 and turn_nums[1] - turn_nums[2] > 1:
             if not turn_nums[0] == 14:
                 three_card_wrap_combis_on_turn.append([turn_nums[0]+1, turn_nums[0]-1, turn_nums[0]-2])
@@ -302,7 +311,7 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
         return True, three_card_wrap_combis_on_turn
 
 
-    #---------------------------------------------------------------------------------------
+    #--------------------------------------------------------------------------------------------------
     """
     Above outlines everything that is possible on the turn. 
     Below, I will compare my hand to what is possible and rate how nutted my hand is on the turn.
@@ -344,7 +353,7 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
                         elif self.num_list.count(turn_nums[one_of_two_turns][1]) == 2:
                             hand_ratings_turns[one_of_two_turns]['board_paired'] = 7  # quads, 7 7
                         elif turn_nums[one_of_two_turns][0] in self.num_list and turn_nums[one_of_two_turns][1] in self.num_list:
-                            hand_ratings_turns[one_of_two_turns]['board_paired'] = 6   # 'nutish' house as overhouse is available, 10 7
+                            hand_ratings_turns[one_of_two_turns]['board_paired'] = 6.5   # 'nutish' house as overhouse is available, 10 7
                         elif turn_nums[one_of_two_turns][1] in self.num_list and turn_nums[one_of_two_turns][2] in self.num_list:
                             hand_ratings_turns[one_of_two_turns]['board_paired'] = 5  # lower house, 7 5
                     # bottom card paired  10 7 5 5
@@ -356,7 +365,7 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
                         elif self.num_list.count(turn_nums[one_of_two_turns][1]) >= 2:
                             hand_ratings_turns[one_of_two_turns]['board_paired'] = 7  # overhouse, 7 7
                         elif turn_nums[one_of_two_turns][0] in self.num_list and turn_nums[one_of_two_turns][2] in self.num_list:
-                            hand_ratings_turns[one_of_two_turns]['board_paired'] = 6  # 'nutish' house as overhouse is available, 10 7
+                            hand_ratings_turns[one_of_two_turns]['board_paired'] = 6.5  # 'nutish' house as overhouse is available, 10 7
                         elif turn_nums[one_of_two_turns][1] in self.num_list and turn_nums[one_of_two_turns][2] in self.num_list:
                             hand_ratings_turns[one_of_two_turns]['board_paired'] = 5  # lower house, 7 5
 
@@ -370,16 +379,16 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
         Might be worth making a list of higher flushes and rate them 6, but not sure as I only want to
         play nuts, esp with flush.
         """
-        my_hand = [(card_num, card_suit) for card_num in self.num_list for card_suit in self.suit_list]
+        my_hand = list(zip(self.num_list, self.suit_list))
         if self.did_flush_completed_on_turn1:
-            if [self.nut_flush_nums_turn1, self.suit_of_flush_turn1] in my_hand:
+            if (self.nut_flush_nums_turn1, self.nut_flush_suit_turn1) in my_hand:
                 self.hand_ratings_turn1['made_flush'] = 7
-            elif self.suit_list.count(self.suit_of_flush_turn1) >= 2:
+            elif self.suit_list.count(self.nut_flush_suit_turn1) >= 2:
                 self.hand_ratings_turn1['made_flush'] = 5
         if self.did_flush_completed_on_turn2:
-            if [self.nut_flush_nums_turn2, self.suit_of_flush_turn2] in my_hand:
+            if (self.nut_flush_nums_turn2, self.nut_flush_suit_turn2) in my_hand:
                 self.hand_ratings_turn2['made_flush'] = 7
-            elif self.suit_list.count(self.suit_of_flush_turn2) >= 2:
+            elif self.suit_list.count(self.nut_flush_suit_turn2) >= 2:
                 self.hand_ratings_turn2['made_flush'] = 5
 
         # if board is paired, rate flush as None
@@ -391,16 +400,25 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
     def is_straight_completed_on_turn(self):
         """
         This function will:
-        1) see if either board has a completed straight
-        2) if so, if I have any of it and add it to the rating.
+        1) see if either board has a completed straight, if so use the list of two card combis to;
+        2) see if I have any of it and add it to the rating.
 
-        Just like with flush I think rate 7 to the nut straight and any other straight that
-        I have will be rated as 5.
-        Can consider making finer distinction about second nut straight later on, just like with flush above.
+        Rating nut straight a 6.5.
+        (reason it's not a 7 is because I will blast 7's, and this is not blast worthy on its own).
+        Way to play made straight:
+        - made straight on non-flush draw board + strong hand on other board = BLAST
+        - made straight on flush draw board and I have flush draw + strong hand other board = BLAST
+        - made straight on flush draw board I do not have flush + strong hand other board = BLAST
+        So as long as I have made straight + strong hand on other board = BLAST
+        Otherwise call and play passive, if I don't have strong hand on other board.
+
+        N.B. One thing to consider is that if there is a flush draw on board it is actually not bad, because others
+        may be just drawing to the flush only and not have the straight, in which case I am DOMINATING.
+        So having just the straight is strong, especially with one card to come. Matters a lot what I have on other board.
         """
         if self.did_straight_complete_on_turn1:
             if self.two_card_combi_completing_straight_on_turn1 and all(card in self.num_list for card in self.two_card_combi_completing_straight_on_turn1[0]):
-                self.hand_ratings_turn1['made_straight'] = 7
+                self.hand_ratings_turn1['made_straight'] = 6.5
             else:
                 for two_card_combi in self.two_card_combi_completing_straight_on_turn1:
                     if all(card in self.num_list for card in two_card_combi):
@@ -408,7 +426,7 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
 
         if self.did_straight_complete_on_turn2:
             if self.two_card_combi_completing_straight_on_turn2 and all(card in self.num_list for card in self.two_card_combi_completing_straight_on_turn2[0]):
-                self.hand_ratings_turn2['made_straight'] = 7
+                self.hand_ratings_turn2['made_straight'] = 6.5
             else:
                 for two_card_combi in self.two_card_combi_completing_straight_on_turn2:
                     if all(card in self.num_list for card in two_card_combi):
@@ -418,6 +436,25 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
             self.hand_ratings_turn1['made_straight'] = None
         if self.did_board_pair_on_turn2 or self.did_flush_completed_on_turn2:
             self.hand_ratings_turn2['made_straight'] = None
+
+    def two_pair_no_flush_or_straight_completed(self):
+        """
+        Two pair with no made straight or flush or board pair.
+        This is quite strong, especially if it is the top two pair.
+        It's written to assist with stronger hands on other board.
+
+        I will rate these a 5.5.
+        It is necessary for e.g. if I have top set on one board, and two pair on other board with no made straight or
+        flush, then BLAST.
+        """
+        turn1_nums = [card[0] for card in self.turn1]
+        turn2_nums = [card[0] for card in self.turn2]
+        if not self.did_flush_completed_on_turn1 and not self.did_board_pair_on_turn1 and not self.did_straight_complete_on_turn1:
+            if len(set(turn1_nums) & set(self.num_list)) >= 2:
+                self.hand_ratings_turn1['dry_two_pair'] = 5.5
+        if not self.did_flush_completed_on_turn2 and not self.did_board_pair_on_turn2 and not self.did_straight_complete_on_turn2:
+            if len(set(turn2_nums) & set(self.num_list)) >= 2:
+                self.hand_ratings_turn2['dry_two_pair'] = 5.5
 
     def set_on_turn(self):
         """
@@ -429,6 +466,8 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
         if I have a set of course.
         It will only consider cases where the board is not completed. For completed boards I will
         consider it in the combo function below.
+
+        Consider adding cases where flush or straight is completed.
         """
         which_set_in_my_hand_turn1 = None
         which_set_in_my_hand_turn2 = None
@@ -450,21 +489,27 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
             which_set_in_my_hand_turn2 = 'bottom'
 
         # check if there is made straight for flush
-        if not self.did_flush_completed_on_turn1 and self.did_straight_complete_on_turn1:
+        if not self.did_flush_completed_on_turn1 and not self.did_straight_complete_on_turn1 and not self.did_board_pair_on_turn1:
             if which_set_in_my_hand_turn1 == 'top':
-                self.hand_ratings_turn1['set_with_nothing_completed'] = 6
+                self.hand_ratings_turn1['set_with_nothing_completed'] = 6.5
             elif which_set_in_my_hand_turn1 == 'middle':
-                self.hand_ratings_turn1['set_with_nothing_completed'] = 6
+                self.hand_ratings_turn1['set_with_nothing_completed'] = 6.5
             elif which_set_in_my_hand_turn1 == 'bottom':
-                self.hand_ratings_turn1['set_with_nothing_completed'] = 5
-        if not self.did_flush_completed_on_turn2 and self.did_straight_complete_on_turn2:
-            if which_set_in_my_hand_turn2 == 'top':
-                self.hand_ratings_turn2['set_with_nothing_completed'] = 6
-            elif which_set_in_my_hand_turn2 == 'middle':
-                self.hand_ratings_turn2['set_with_nothing_completed'] = 6
-            elif which_set_in_my_hand_turn2 == 'bottom':
-                self.hand_ratings_turn2['set_with_nothing_completed'] = 5
+                self.hand_ratings_turn1['set_with_nothing_completed'] = 5.5
+        # set on a made straight/flush board
+        elif any([self.did_flush_completed_on_turn1, self.did_straight_complete_on_turn1, self.did_board_pair_on_turn1]) and which_set_in_my_hand_turn1:
+            self.hand_ratings_turn1['set_with_nothing_completed'] = 5.5
 
+        if not self.did_flush_completed_on_turn2 and not self.did_straight_complete_on_turn2 and not self.did_board_pair_on_turn2:
+            if which_set_in_my_hand_turn2 == 'top':
+                self.hand_ratings_turn2['set_with_nothing_completed'] = 6.5
+            elif which_set_in_my_hand_turn2 == 'middle':
+                self.hand_ratings_turn2['set_with_nothing_completed'] = 6.5
+            elif which_set_in_my_hand_turn2 == 'bottom':
+                self.hand_ratings_turn2['set_with_nothing_completed'] = 5.5
+        # set on a made straight/flush board
+        elif any([self.did_flush_completed_on_turn2, self.did_straight_complete_on_turn2, self.did_board_pair_on_turn2]) and which_set_in_my_hand_turn2:
+            self.hand_ratings_turn2['set_with_nothing_completed'] = 5.5
         return which_set_in_my_hand_turn1, which_set_in_my_hand_turn2
 
     def is_flush_draw_on_turn(self):
@@ -475,9 +520,10 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
         """
         flush_draw_on_turn1 = None
         flush_draw_on_turn2 = None
-        my_hand = [(card_num, card_suit) for card_num in self.num_list for card_suit in self.suit_list]
+
+        my_hand = map(list, list(zip(self.num_list, self.suit_list)))
         if self.is_flush_draw_on_turn1:
-            flush_draw_suit = [fd_suit for fd_suit in self.list_of_nut_flush_draw_num_suit_on_turn1[1]]
+            flush_draw_suit = [fd_suit for fd_suit in self.list_of_nut_flush_draw_num_suit_on_turn1[1]]  # just to identify 'some' flush draws
             if any(flush_draw in my_hand for flush_draw in self.list_of_nut_flush_draw_num_suit_on_turn1):
                 flush_draw_on_turn1 = 'nut'
             elif self.suit_list.count(flush_draw_suit[0]) >= 2:
@@ -485,6 +531,7 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
             elif len(flush_draw_suit) > 1 and not self.hand_ratings_turn1.get('flush_draw'):
                 if self.suit_list.count(flush_draw_suit[1]) >= 2:
                     flush_draw_on_turn1 = 'some'
+        my_hand = map(list, list(zip(self.num_list, self.suit_list)))  # need to have it twice; do not remove this line
         if self.is_flush_draw_on_turn2:
             flush_draw_suit = [fd_suit for fd_suit in self.list_of_nut_flush_draw_num_suit_on_turn2[1]]
             if any(flush_draw in my_hand for flush_draw in self.list_of_nut_flush_draw_num_suit_on_turn2):
@@ -496,8 +543,8 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
                     flush_draw_on_turn2 = 'some'
 
         # check if board paired, if so rate flush draw as None
-        flush_draw_on_turn1 = None if self.did_board_pair_on_turn1 else flush_draw_on_turn1
-        flush_draw_on_turn2 = None if self.did_board_pair_on_turn2 else flush_draw_on_turn2
+        flush_draw_on_turn1 = None if (self.did_board_pair_on_turn1 or self.did_flush_completed_on_turn1) else flush_draw_on_turn1
+        flush_draw_on_turn2 = None if (self.did_board_pair_on_turn2 or self.did_flush_completed_on_turn2) else flush_draw_on_turn2
         return flush_draw_on_turn1, flush_draw_on_turn2
 
     def is_wrap_draw_on_turn(self):
@@ -523,97 +570,129 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
                     if all(card in self.num_list for card in two_card_combi):
                         wrap_on_turn2 = 'some'
         # check if board paired or flush completed, if so rate wrap draw as None
-        wrap_on_turn1 = None if (self.did_board_pair_on_turn1 or self.did_flush_completed_on_turn1) else wrap_on_turn1
-        wrap_on_turn2 = None if (self.did_board_pair_on_turn2 or self.did_flush_completed_on_turn2) else wrap_on_turn2
+        wrap_on_turn1 = None if (self.did_board_pair_on_turn1 or self.did_flush_completed_on_turn1 or self.did_straight_complete_on_turn1) else wrap_on_turn1
+        wrap_on_turn2 = None if (self.did_board_pair_on_turn2 or self.did_flush_completed_on_turn2 or self.did_straight_complete_on_turn2) else wrap_on_turn2
         return wrap_on_turn1, wrap_on_turn2
 
     def combo_draw(self):
         """
         This function will consider the combination of hands with flush and wrap draws.
 
-        By itself, highest I will rate any draw is 6, because it still can BRICK! - and with just one card to come,
-        need to be conservative.
-        Also, because I will always bet 7's so it's not right to rate draw a 7 as I generally don't want to bet with it.
+        By itself, highest I will rate any draw is 6.6 (and not 7), because it still can BRICK! - esp with one card to come; play conservative.
+        Also, because I will always bet 7's so it's not right to rate draw a 7 as I generally don't want to bet with it unless sth strong on other board.
         """
         wrap_draw_on_turn1, wrap_draw_on_turn2 = self.is_wrap_draw_on_turn()
         flush_draw_on_turn1, flush_draw_on_turn2 = self.is_flush_draw_on_turn()
         set_on_turn1, set_on_turn2 = self.set_on_turn()
-        # Wrap + flush combi draw
-        if wrap_draw_on_turn1 == 'nut' and flush_draw_on_turn1 == 'nut':
-            self.hand_ratings_turn1['combo_draw'] = 6
-        elif wrap_draw_on_turn1 and flush_draw_on_turn1:
-            self.hand_ratings_turn1['combo_draw'] = 5
-        # Set + flush combi draw
-        elif set_on_turn1 == 'nut' and flush_draw_on_turn1 == 'nut':
-            self.hand_ratings_turn1['combo_draw'] = 6
-        elif set_on_turn1 and flush_draw_on_turn1:
-            self.hand_ratings_turn1['combo_draw'] = 5
 
-    def analyse_my_hand_against_turn(self, action_on_flop, extra_information):
+        # One issue with the below is that there are overlaps! - so collect all the values, and take max() at the end.
+        self.hand_ratings_turn1['combo_draw'] = list()
+        self.hand_ratings_turn2['combo_draw'] = list()
+
+        # Wrap + flush combi draw turn1
+        if wrap_draw_on_turn1 == 'nut' and flush_draw_on_turn1 == 'nut':
+            self.hand_ratings_turn1['combo_draw'].append(6.5)
+        if wrap_draw_on_turn1 and flush_draw_on_turn1:
+            self.hand_ratings_turn1['combo_draw'].append(5.5)
+        # Set + flush combi draw
+        if set_on_turn1 == 'top' and flush_draw_on_turn1 == 'nut':
+            self.hand_ratings_turn1['combo_draw'].append(6.5)
+        if set_on_turn1 == 'top' and flush_draw_on_turn1 == 'some':
+            self.hand_ratings_turn1['combo_draw'].append(6.5)
+        if set_on_turn1 and flush_draw_on_turn1:
+            self.hand_ratings_turn1['combo_draw'].append(5.5)
+        # Made straight with flush/set redraw
+        if self.hand_ratings_turn1.get('made_straight') == 6.5:
+            if flush_draw_on_turn1 in ('some', 'nut') or set_on_turn1:
+                self.hand_ratings_turn1['made_straight'] = 6.75
+
+        # Wrap + flush combi draw turn2
+        if wrap_draw_on_turn2 == 'nut' and flush_draw_on_turn2 == 'nut':
+            self.hand_ratings_turn2['combo_draw'].append(6.5)
+        if wrap_draw_on_turn1 and flush_draw_on_turn2:
+            self.hand_ratings_turn2['combo_draw'].append(5.5)
+        # Set + flush combi draw
+        if set_on_turn2 == 'top' and flush_draw_on_turn2 == 'nut':
+            self.hand_ratings_turn2['combo_draw'].append(6.5)
+        if set_on_turn2 == 'top' and flush_draw_on_turn2 == 'some':
+            self.hand_ratings_turn2['combo_draw'].append(6.5)
+        if set_on_turn2 and flush_draw_on_turn2:
+            self.hand_ratings_turn2['combo_draw'].append(5.5)
+        # Made straight with flush/set redraw
+        if self.hand_ratings_turn2.get('made_straight') == 6.5:
+            if flush_draw_on_turn2 in ('some', 'nut') or set_on_turn2:
+                self.hand_ratings_turn2['made_straight'] = 6.75
+
+        self.hand_ratings_turn1['combo_draw'] = max(self.hand_ratings_turn1['combo_draw']) if self.hand_ratings_turn1.get('combo_draw') else None
+        self.hand_ratings_turn2['combo_draw'] = max(self.hand_ratings_turn2['combo_draw']) if self.hand_ratings_turn2.get('combo_draw') else None
+
+    def analyse_my_hand_against_turn(self, action_on_flop=None, extra_information=None):
         """
-        action_on_flop will be 'BET' or 'CALL' - tells us what we did on the flop;
-        importantly it tells us who the aggressor was on last street.
+        action_on_flop will be 'BET' or 'CALL' - tells us what we did on the flop; who aggressor was on last street.
 
         It's quite important to know on the turn in general the SPR of the person who bet and anyone who called.
         Because if it is small, then a fold should be a call many times.
-
-        (R)!!!
-        If the board is not paired or there is no flush on turn, I will fill the dictionary value with 'None'.
-        Importantly distinction is that if board id paired and I have nothing, I will rate it a 1.
-        (not a 0, because this can be confused with None depending on how you use it)
 
         Another thing to consider is that if board is paired, there's no need to run through
         straight or flush or draws functions, as they will be void.
         With this in mind it makes sense to pass it in a certain order and if something like a paired
         board is detected, stop passing and can return there.
         Order to check things on turn:
-        1) did board pair -       self.hand_ratings_turn1['board_paired']
-        2) did flush complete -   self.hand_ratings_turn1['made_flush']
-        3) did straight complete- self.hand_ratings_turn1['made_straight']
-        4) Combo draws -          self.hand_ratings_turn1['combo_draw']
-
-        (R)!!!!!!
-        Note that if say turn1 is paired, then you should have automatic 1 for all other ratings in hand.
-        Because on a paired board other stuff is futile, or even if you have hit something, it is not
-        worth considering continuing on that basis.
-        We need to add that logic to this function.
+        1) did board pair -                  self.hand_ratings_turn1['board_paired']
+        2) did flush complete -              self.hand_ratings_turn1['made_flush']
+        3) did straight complete-            self.hand_ratings_turn1['made_straight']
+        4) Combo draws -                     self.hand_ratings_turn1['combo_draw']
+        5) two pair no st8/flush/board pair- self.hand_ratings_turn1['dry_two_pair']
 
         Ratings and what they mean:
         7 : the absolute coconuts - e.g. quads
+        6.5: coconuts but only blast if I have something good on other hand, as coconuts can change (e.g. top set)
         6:  very close to the coconuts - e.g. house with overhouse available, or middle set.
-        5:  strong but non-nut - e.g. top house but overhouse available
+        5.5: strongish - e.g. top two pair on board with no flush or straight made; or bottom set
+        4:  something non nutted- e.g. lower house or lower straight
+
+        Strategy of play with ratings:
+        - 7 bet regardless of other hand
+        - 6.5 + 6 bet
+        - 6.5 + lower ; call a bet or bet if not bet
+        - 6 and 6 bet if not bet otherwise call
+        - Check fold anything less
+
+        The 6.5 created for a made straight, but on it's own not good enough cos other might have it too.
+        So need to consider other board to determine if I should bet/raise or not.
+        It will also be used on board where I have top set and no flush or straight completed.
+        On a draw heavy board multiway, this is not ideal to blast unless I have something else on other board.
         """
 
         # Fill out my hand ratings based on what is on board and what I have
         self.is_board_paired_on_turn()
-        # Need to waterfall this so that if anything above is filled, no need to fill the below, I think?
-        # OR if anything above filled, anything below can be marked as 1 in terms of rating and no need to
-        # run the function.
+        self.two_pair_no_flush_or_straight_completed()
         self.is_flush_completed_on_turn()
         self.is_straight_completed_on_turn()
         self.combo_draw()
 
         # Add logic here to check both my hand ratings and then return 'bet', 'call', 'check' or 'fold'.
         hand_rating_on_turn1 = max(self.hand_ratings_turn1.values())
-        hand_rating_on_turn2 = max(self.hand_ratings_turn1.values())
+        hand_rating_on_turn2 = max(self.hand_ratings_turn2.values())
 
         # STRATEGY FOR MY PLAY:
-        # For now I'll ignore SPR for check raising- can introduce it later, just bet when I have it and check when I don't
-        # I'm confident doing this alone will print money.
+        # For now I'll ignore SPR for check raising. When I record my plays; much easier to identify where I can go for check raises;
         action_behind_me = self.check_bet_three_bet()  # 'check', 'bet', 'three_bet'
         if hand_rating_on_turn1 == 7 or hand_rating_on_turn2 == 7:
             return 'BET'
-        if hand_rating_on_turn1 == 6 and hand_rating_on_turn2 == 6:
-            if action_on_flop == 'BET':  # means I was aggressor on flop
-                return 'BET'
-            elif not self.guy_to_right_bet_size:
+        if (hand_rating_on_turn1 == 6.75 and hand_rating_on_turn2 >= 5.5) or (hand_rating_on_turn2 == 6.75 and hand_rating_on_turn1 >= 5.5):
+            return 'BET'
+        if (hand_rating_on_turn1 == 6.5 and hand_rating_on_turn2 == 6) or (hand_rating_on_turn2 == 6.5 and hand_rating_on_turn1 == 6):
+            return 'BET'
+        if (hand_rating_on_turn1 == 6.5 and hand_rating_on_turn2 < 6) or (hand_rating_on_turn2 == 6.5 and hand_rating_on_turn1 < 6):
+            if not self.guy_to_right_bet_size:
                 return 'BET'
             else:
                 return 'CALL'
-        if hand_rating_on_turn1 == 5 and hand_rating_on_turn2 == 6 \
-            or hand_rating_on_turn1 == 6 and hand_rating_on_turn2 == 5:
-            if action_behind_me == 'bet' and not self.positions_of_players_to_act_ahead_of_me:
-                return 'CALL'
+        # Think about adding more cases to call, when I am in position and no one to act ahead of me - especilly heads up.
+        # or even non-heads up but I am in position (exploit) - like the chinese guy does all the time, blasts when:
+        # he has position + nuts changed on river + checked to him.
+        # (I believe I noticed he doesn't do it on baords where straight completed but more closed like flush completing or board pairing).
 
         if action_behind_me == 'check':
             return 'CALL'

@@ -6,7 +6,7 @@ from all_the_steps_with_coordinates.step_4_flop_turn_river.flop_turn_river impor
 from all_the_steps_with_coordinates.step_5_how_muchbet_and_in_pot.pot_size_and_action_behind import PotSizeAndActionBehindMe
 from all_the_steps_with_coordinates.step_7_detect_whos_turn_to_act.whos_turn_to_act import IsItMyTurnToAct
 from get_static_info_pre_flop import RunFirstOneTime
-from pre_flop_play.app_pre_flop import RunPreFlop
+from analyse_my_hand_on_flop_turn_river.analyse_my_hand__pre_flop import RunPreFlop
 from analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_flop import AnalyseMyHandOnFlop
 from CLICKING import click_fold_call_bet
 from analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_turn import AnalyseMyHandOnTurn
@@ -95,7 +95,6 @@ def run_this_on_the_river_app_dot_py(action_on_turn, extra_information):
 
 	fold_tracker = plip.detect_if_cards_in_hand(my_position, empty_seat_tracker)
 	stack_tracker = get_stack_sizes(my_position, fold_tracker)  # Set stack to 0 if someone folded; make this the universal way to check
-	# hu = run_throughout.are_we_heads_up()  - add this heads up function somewhere else.
 
 	PSABM = PotSizeAndActionBehindMe(my_position, fold_tracker, stack_tracker)
 	pot_size = PSABM.pot_size()
