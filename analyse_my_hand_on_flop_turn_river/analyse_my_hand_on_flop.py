@@ -57,13 +57,6 @@ class FlopHelper:
         self.is_wrap_draw_on_flop2 = self.wrap_draw_on_flop_generator[0]
         self.is_wrap_closed_on_flop2 = self.wrap_draw_on_flop_generator[1]
         self.three_card_wrap_combis_on_flop2 = self.wrap_draw_on_flop_generator[2]
-        # Is there a straight draw on either flops
-        self.straight_draw_on_flop_generator = FlopHelper.straight_draw_on_flop(self.flop1)
-        self.is_straight_draw_on_flop1 = self.straight_draw_on_flop_generator[0]
-        self.two_card_straight_draw_combis_on_flop1 = self.straight_draw_on_flop_generator[1]
-        self.straight_draw_on_flop_generator = FlopHelper.straight_draw_on_flop(self.flop2)
-        self.is_straight_draw_on_flop2 = self.straight_draw_on_flop_generator[0]
-        self.two_card_straight_draw_combis_on_flop2 = self.straight_draw_on_flop_generator[1]
 
     def organise_flop(self):
         """
@@ -334,83 +327,6 @@ class FlopHelper:
         if not three_card_wrap_combis_on_flop:
             return False, None, []
         return True, closed_wrap, three_card_wrap_combis_on_flop
-
-    @staticmethod
-    def straight_draw_on_flop(flop):
-        """
-        Just like wrap draw above this, I will consider all straights.
-
-        This function will return:
-        1) if there is a straight draw on the flop
-        2) a list of all the straight draw cards, there could be a few, e.g. on flop 10 8 5; [[J,9], [9,7], [7,6]] would be returned
-
-        The only possible way for there to be a straight draw is if the gap between two cards are 1, 2 or 3.
-        i.e. 10 9   or  10 8  or  10 7
-        [[12,11],[11,8],[8,7]]    [[J,9], [9,7]]    [[9,8]]
-
-        As usual, the combinations will go down in nuttiness as we go down the list.
-        At this point I'll assume that we have done a check that a MADE STRAIGHT is NOT on board already.
-
-        TO DO: add inside straight draws, e.g. on 10 8, if you have 12,11 that is a straight draw as well;
-        a bit much for now so I'll leave it out.
-        """
-        flop_nums = [card[0] for card in flop]
-        two_card_straight_draw_combis_on_flop = []
-
-        # First check that there is a straight possibility between the flop cards; this filters out paired cards.
-        distance_btw_cards_for_straight_to_be_possible = (1, 2, 3)
-        distance_first_two_cards = flop_nums[0] - flop_nums[1]
-        distance_second_and_third_card = flop_nums[1] - flop_nums[2]
-
-        if not distance_first_two_cards in distance_btw_cards_for_straight_to_be_possible and \
-            not distance_second_and_third_card in distance_btw_cards_for_straight_to_be_possible:
-            return False, []
-
-        # If straight possible, retrieve all the two straight draw making combinations.
-        # Get all combinations with first two flop cards
-        if distance_first_two_cards == 3:  # 10 7
-            two_card_straight_draw_combis_on_flop.append([flop_nums[0]-1, flop_nums[0]-2])
-        elif distance_first_two_cards == 2:  # 10 8
-            if flop_nums[0] != 14:
-                two_card_straight_draw_combis_on_flop.append([flop_nums[0]+1, flop_nums[0]-1])
-                two_card_straight_draw_combis_on_flop.append([flop_nums[1]+1, flop_nums[1]-1])
-            else:
-                # edge case, can't have higher straight draw card higher than 14
-                two_card_straight_draw_combis_on_flop.append([flop_nums[1]+1, flop_nums[1]-1])
-        elif distance_first_two_cards == 1:  # 10 9
-            if flop_nums[0] < 13:
-                two_card_straight_draw_combis_on_flop.append([flop_nums[0]+2, flop_nums[0]+1])
-                two_card_straight_draw_combis_on_flop.append([flop_nums[0]+1, flop_nums[1]-1])
-                two_card_straight_draw_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2])
-            elif flop_nums[0] == 13:
-                two_card_straight_draw_combis_on_flop.append([flop_nums[0]+1, flop_nums[1]-1])
-                two_card_straight_draw_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2])
-            elif flop_nums[0] == 14:
-                two_card_straight_draw_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2])
-
-        # Get all combinations with second two flop cards (N.B. if second card is 14 first card must be 14)
-        if distance_second_and_third_card == 3:  # 10 7
-            two_card_straight_draw_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2])
-        elif distance_second_and_third_card == 2:  # 10 8
-            if flop_nums[1] != 14:
-                two_card_straight_draw_combis_on_flop.append([flop_nums[1]+1, flop_nums[1]-1])
-                two_card_straight_draw_combis_on_flop.append([flop_nums[2]+1, flop_nums[2]-1])
-            else:
-                two_card_straight_draw_combis_on_flop.append([flop_nums[2]+1, flop_nums[2]-1])
-        elif distance_second_and_third_card == 1:  # 10 9
-            if flop_nums[1] < 13:
-                two_card_straight_draw_combis_on_flop.append([flop_nums[1]+2, flop_nums[1]+1])
-                two_card_straight_draw_combis_on_flop.append([flop_nums[1]+1, flop_nums[2]-1])
-                two_card_straight_draw_combis_on_flop.append([flop_nums[2]-1, flop_nums[2]-2])
-            elif flop_nums[1] == 13:
-                two_card_straight_draw_combis_on_flop.append([flop_nums[1]+1, flop_nums[2]-1])
-                two_card_straight_draw_combis_on_flop.append([flop_nums[2]-1, flop_nums[2]-2])
-
-        if not two_card_straight_draw_combis_on_flop:
-            print('something went wrong with generating two straight card combis, two_card_straight_draw_combis_on_flop '
-                  'should not be empty')
-
-        return True, two_card_straight_draw_combis_on_flop
 
 
 class AnalyseMyHandOnFlop(FlopHelper):

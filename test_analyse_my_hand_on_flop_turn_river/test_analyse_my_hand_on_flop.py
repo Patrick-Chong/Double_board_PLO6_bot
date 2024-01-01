@@ -10,7 +10,6 @@ from analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_flop import FlopHelpe
 
 class TestFlopHelper:
 
-    @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_flop.FlopHelper.straight_draw_on_flop')
     @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_flop.FlopHelper.wrap_draw_on_flop')
     @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_flop.FlopHelper.flush_draw_on_flop')
     @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_flop.FlopHelper.made_straight_on_flop')
@@ -18,7 +17,7 @@ class TestFlopHelper:
     @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_flop.FlopHelper.is_any_board_paired_on_flop')
     @mock.patch('flop_turn_river_cards.TheFlop.detect_flop_nums_and_suit', return_value=([[10, 'H'], [8, 'C'], [14, 'D']], [[10, 'H'], [8, 'C'], [12, 'D']]))
     def test_organise_flop(self, mock_detect_turn_nums_and_suit, mock_is_any_board_paired_on_flop, mock_made_flush_on_flop, mock_made_straight_on_flop,
-                           mock_flush_draw_on_flop, mock_wrap_draw_on_flop, mock_straight_draw_on_flop):
+                           mock_flush_draw_on_flop, mock_wrap_draw_on_flop):
         x = FlopHelper()
         actual_flops = x.organise_flop()
         expected_flops = [[14, 'D'], [10, 'H'], [8, 'C']], [[12, 'D'], [10, 'H'], [8, 'C']]
@@ -93,42 +92,17 @@ class TestFlopHelper:
         ([[14, 'S'], [11, 'S'], [2, 'C']], [[14, 'S'], [11, 'S'], [2, 'C']], [True, True, [[13, 12, 10]]]),
         ([[10, 'S'], [9, 'S'], [2, 'C']], [[10, 'S'], [9, 'S'], [2, 'C']], [True, False, [[12, 11, 8], [13, 12, 11], [11, 8, 7], [8, 7, 6]]]),
     ])
-    @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_flop.FlopHelper.straight_draw_on_flop')
     @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_flop.FlopHelper.flush_draw_on_flop')
     @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_flop.FlopHelper.made_straight_on_flop')
     @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_flop.FlopHelper.made_flush_on_flop')
     @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand_on_flop.FlopHelper.is_any_board_paired_on_flop')
     def test_wrap_draw_on_flop(self, mock_is_any_board_paired_on_flop, mock_made_flush_on_flop, mock_made_straight_on_flop,
-                               mock_flush_draw_on_flop, mock_straight_draw_on_flop, flop1, flop2, expected_output):
+                               mock_flush_draw_on_flop, flop1, flop2, expected_output):
         with mock.patch('flop_turn_river_cards.TheFlop.detect_flop_nums_and_suit', return_value=(flop1, flop2)):
             x = FlopHelper()
             actual_output = x.wrap_draw_on_flop(flop1)
             assert actual_output[0] == expected_output[0]
             assert all(card in actual_output[2] for card in expected_output[2])
-
-    @pytest.mark.parametrize('flop1,flop2,expected_output', [
-        # first two cards, straight draw
-        ([[14, 'S'], [10, 'S'], [6, 'C']], [[14, 'S'], [10, 'S'], [6, 'C']], [False, []]),
-        ([[10, 'S'], [7, 'S'], [2, 'C']], [[10, 'S'], [7, 'S'], [2, 'C']], [True, [[9,8]]]),
-        ([[10, 'S'], [8, 'S'], [2, 'C']], [[10, 'S'], [8, 'S'], [2, 'C']], [True, [[11,9],[9,7]]]),
-        ([[10, 'S'], [9, 'S'], [2, 'C']], [[10, 'S'], [9, 'S'], [2, 'C']], [True, [[12,11],[11,8],[8,7]]]),
-        ([[14, 'S'], [12, 'S'], [2, 'C']], [[14, 'S'], [12, 'S'], [2, 'C']], [True, [[13,11]]]),
-        ([[13, 'S'], [12, 'S'], [2, 'C']], [[13, 'S'], [12, 'S'], [2, 'C']], [True, [[14,11],[11,10]]]),
-        ([[14, 'S'], [13, 'S'], [2, 'C']], [[14, 'S'], [13, 'S'], [2, 'C']], [True, [[12,11]]]),
-        # second two cards, straight draw
-        ([[14, 'S'], [10, 'S'], [6, 'C']], [[14, 'S'], [10, 'S'], [6, 'C']], [False, []]),
-        ([[14, 'S'], [7, 'S'], [4, 'C']], [[14, 'S'], [7, 'S'], [4, 'C']], [True, [[6,5]]]),
-        ([[14, 'S'], [8, 'S'], [6, 'C']], [[14, 'S'], [8, 'S'], [6, 'C']], [True, [[9,7],[7,5]]]),
-        ([[13, 'S'], [9, 'S'], [8, 'C']], [[13, 'S'], [9, 'S'], [8, 'C']], [True, [[11,10],[10,7],[7,6]]]),
-        ([[14, 'S'], [13, 'S'], [2, 'C']], [[14, 'S'], [13, 'S'], [2, 'C']], [True, [[12,11]]]),
-        ([[13, 'S'], [12, 'S'], [2, 'C']], [[13, 'S'], [12, 'S'], [2, 'C']], [True, [[14, 11],[11,10]]]),
-    ])
-    def test_straight_draw_on_flop(self, flop1, flop2, expected_output):
-        with mock.patch('flop_turn_river_cards.TheFlop.detect_flop_nums_and_suit', return_value=(flop1, flop2)):
-            x = FlopHelper()
-            actual_output = x.straight_draw_on_flop(flop1)
-            assert actual_output[0] == expected_output[0]
-            assert actual_output[1] == expected_output[1]
 
 
 def test_helper_flopped_nut_flush_draw():
