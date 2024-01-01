@@ -8,7 +8,6 @@ from flop_turn_river_cards import TheFlop
 class FlopHelper:
     # Note this class can and should be used on the turn and river too!
     def __init__(self):
-
         self.flop1, self.flop2 = self.organise_flop()
         # self.flop1 = [[14, 'S'], [6, 'S'], [5, 'C']]
 
@@ -79,21 +78,10 @@ class FlopHelper:
         flop2 = [[14, 'D'], [12, 'D'], [8, 'C']]
         """
         generate_flop = TheFlop()
-        final_flop1 = list()
-        final_flop2 = list()
         flop1, flop2 = generate_flop.detect_flop_nums_and_suit()
-        flop1_num, flop1_suit = flop1[0], flop1[1]
-        final_flop1.append([flop1_num[0], flop1_suit[0]])
-        final_flop1.append([flop1_num[1], flop1_suit[1]])
-        final_flop1.append([flop1_num[2], flop1_suit[2]])
 
-        flop2_num, flop2_suit = flop2[0], flop2[1]
-        final_flop2.append([flop2_num[0], flop2_suit[0]])
-        final_flop2.append([flop2_num[1], flop2_suit[1]])
-        final_flop2.append([flop2_num[2], flop2_suit[2]])
-
-        flop1 = sorted(final_flop1, key=lambda x: x[0], reverse=True)  # Sorting from largest to smallest, hence reverse=True
-        flop2 = sorted(final_flop2, key=lambda x: x[0], reverse=True)  # Sorting from largest to smallest, hence reverse=True
+        flop1 = sorted(flop1, key=lambda x: x[0], reverse=True)  # Sorting from largest to smallest, hence reverse=True
+        flop2 = sorted(flop2, key=lambda x: x[0], reverse=True)  # Sorting from largest to smallest, hence reverse=True
 
         return flop1, flop2
 
@@ -102,7 +90,7 @@ class FlopHelper:
         """
         This function will return:
          1) if the given flop is paired,
-         2) if it is an 'lowpaired' or 'highpaied'.  lowpaired 10 3 3 board, and highpaied 10 10 3 board
+         2) if it is an 'low' paired or 'high' paied.  'low' paired 10 3 3 board, and 'high' paired 10 10 3 board
         """
         # self.flop1 = [[14, 'S'], [6, 'S'], [5, 'C']]
         flop_nums = [card[0] for card in flop]
@@ -271,9 +259,9 @@ class FlopHelper:
     def wrap_draw_on_flop(flop):
         """
         This function will return
-        1) True if I have a wrap in my hand.
+        1) True if there is a wrap draw on the flop.
         2) if the wrap is closed
-        3) all three_card_wrap_combis_on_flop.
+        3) a list of all the three_card_wrap_combis_on_flop.
         For example, flop_nums= 12 6 5 then this returns [9, 8, 7], [8, 7, 4], [7, 4, 3], [4, 3, 2].
 
         There is only a wrap draw if there is a two gapper between two of the cards, e.g. 10 9 2.
@@ -287,20 +275,17 @@ class FlopHelper:
         closed_wrap = True
         three_card_wrap_combis_on_flop = []
 
-        # HARD TO WRITE CONDITION TO CHECK IF THERE IS A WRAP; SO JUST WRITE OUT ALL SCENARIOS
-        # JUST UNIT TEST IT THOROUGHLY
-
-        # 12 8 2 or 12 6 2
+        # 12 8 2 or 12 6 2 - three gappers
         if flop_nums[0] - flop_nums[1] == 4:
             three_card_wrap_combis_on_flop.append([flop_nums[0]-1, flop_nums[0]-2, flop_nums[0]-3])
         if flop_nums[1] - flop_nums[2] == 4:
             three_card_wrap_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2, flop_nums[1]-3])
 
-        # 10 7 2 - third card must be lowe than 6, otherwise made straight is on board
+        # 10 7 2 - third card must be lowe than 6, otherwise made straight is on board - two gappers
         if flop_nums[0] - flop_nums[1] == 3 and flop_nums[1] - flop_nums[2] > 1:
             if not flop_nums[0] == 14:
                 three_card_wrap_combis_on_flop.append([flop_nums[0]+1, flop_nums[0]-1, flop_nums[0]-2])
-                three_card_wrap_combis_on_flop.append([flop_nums[0]-1, flop_nums[0]-2, flop_nums[2]-1])
+                three_card_wrap_combis_on_flop.append([flop_nums[0]-1, flop_nums[0]-2, flop_nums[1]-1])
             else:
                 # edge case, if first card on flop is 14, we can't wrap higher than it
                 three_card_wrap_combis_on_flop.append([flop_nums[0]-1, flop_nums[0]-2, flop_nums[1]-1])
@@ -311,11 +296,22 @@ class FlopHelper:
             three_card_wrap_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2, flop_nums[2]-1])
             closed_wrap = False
 
+        # 13 11 8 or 12 7 5; one gapper
+        if flop_nums[0] - flop_nums[1] == 2 and flop_nums[0] - flop_nums[1] > 2:
+            if flop_nums[0] == 14:
+                three_card_wrap_combis_on_flop.append([flop_nums[0]-1, flop_nums[1]-1, flop_nums[1]-2])
+            else:
+                three_card_wrap_combis_on_flop.append([flop_nums[0]+1, flop_nums[0]-1, flop_nums[1]-1])
+                three_card_wrap_combis_on_flop.append([flop_nums[0]-1, flop_nums[1]-1, flop_nums[1]-2])
+        if flop_nums[1] - flop_nums[2] == 2 and flop_nums[0] - flop_nums[1] > 2:
+            three_card_wrap_combis_on_flop.append([flop_nums[1]+1, flop_nums[1]-1, flop_nums[2]-1])
+            three_card_wrap_combis_on_flop.append([flop_nums[1]-1, flop_nums[2]-1, flop_nums[2]-2])
+
         # 10 9 2 - the third card must be lower than 6, otherwise made straight is on board
         if flop_nums[0] - flop_nums[1] == 1 and flop_nums[1] - flop_nums[2] > 3:
-            if flop[0] == 14:  # 14 13 2
+            if flop_nums[0] == 14:  # 14 13 2
                 three_card_wrap_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2, flop_nums[1]-3])
-            elif flop[0] == 13:  # 13 12 2
+            elif flop_nums[0] == 13:  # 13 12 2
                 three_card_wrap_combis_on_flop.append([flop_nums[0]+1, flop_nums[1]-1, flop_nums[1]-2])
                 three_card_wrap_combis_on_flop.append([flop_nums[1]-1, flop_nums[1]-2, flop_nums[1]-3])
             else:
@@ -331,9 +327,12 @@ class FlopHelper:
             three_card_wrap_combis_on_flop.append([flop_nums[1]+1, flop_nums[2]-1, flop_nums[2]-2])
             three_card_wrap_combis_on_flop.append([flop_nums[2]-1, flop_nums[2]-2, flop_nums[2]-3])
 
+        # removing any duplicate three card combis in three_card_wrap_combis_on_flop
+        three_card_wrap_combis_on_flop = set(tuple(three_card_combo) for three_card_combo in three_card_wrap_combis_on_flop)
+        three_card_wrap_combis_on_flop = [list(three_card_combo) for three_card_combo in three_card_wrap_combis_on_flop]
+
         if not three_card_wrap_combis_on_flop:
             return False, None, []
-
         return True, closed_wrap, three_card_wrap_combis_on_flop
 
     @staticmethod
@@ -358,7 +357,7 @@ class FlopHelper:
         flop_nums = [card[0] for card in flop]
         two_card_straight_draw_combis_on_flop = []
 
-        # First check that there is a straight possibility between the flop cards
+        # First check that there is a straight possibility between the flop cards; this filters out paired cards.
         distance_btw_cards_for_straight_to_be_possible = (1, 2, 3)
         distance_first_two_cards = flop_nums[0] - flop_nums[1]
         distance_second_and_third_card = flop_nums[1] - flop_nums[2]
@@ -534,15 +533,11 @@ class AnalyseMyHandOnFlop(FlopHelper):
         The initial aim will be to only play nutted hands, where my equity is high.
         So from an action perspective, I will want to get the money in as efficiently as possible.
 
-        Strategy summary:
-          --------------------------------
-         |  flop1    flop2      action
-         |    6       any   ->   bet
-         |   any       6    ->   bet
-         |    5        5    ->   bet
-         |    5        4    ->   bet
-         |    4        5    ->   bet
-         |    4        4    ->   check
+        STRATEGY SUMMARY:
+        - 7 bet regardless of other hand
+        - 6.75 + 5.5 or above - bet
+        - Both 5.5, call a bet if 1) I am in position and no one to act ahead of me 2) it is only bet and not 3-bet 3) SPR is >= 3. Being last to act is big.
+        - Check fold anything less
 
         extra_information['three_bet_pre_flop'] is available.
         """
@@ -552,35 +547,32 @@ class AnalyseMyHandOnFlop(FlopHelper):
         # (this is important for many reasons, because if I have a 4/4 rated hand and someone bets 0.5 pot and they
         # are all in, I might fold according to my bot, but that's ridiculous in real time, as I'd call that all day.
 
-        # if rating of one hand is 6, BET regardless of anything
-        if any(self.my_hand_rating_on_flop1[6]) or any(self.my_hand_rating_on_flop2[6]):
+        # rating of 7 one hand and anything on other hand
+        if any(self.my_hand_rating_on_flop1[7]) or any(self.my_hand_rating_on_flop2[7]):
             action = 'bet'
-        # if rating of both hands are 5's, bet regardless
-        elif any(self.my_hand_rating_on_flop1[5]) and any(self.my_hand_rating_on_flop2[5]):
+        # rating of 6.75 one hand and 5.5 another
+        elif (any(self.my_hand_rating_on_flop1[6.75]) and any(self.my_hand_rating_on_flop2[5.5])) or \
+                (any(self.my_hand_rating_on_flop2[6.75]) and any(self.my_hand_rating_on_flop1[5.5])):
             action = 'bet'
 
-        # special case if it was 3-bet pre_flop and ace on flop, if I don't have at least 5/5 rating combo, FOLD IT.
+        # special case if it was 3-bet pre_flop and ace on flop (someone likely has aces); if I don't have at least 6.75/5 hand, fold
         if extra_information.get('three_bet_pre_flop'):
             if self.flop1[0][0] == 14 or self.flop2[0][0] == 14:
-                if not action == 'bet':  # I have a 5/5 rating combo
+                if not action == 'bet':  # I have at least a 6.75/5 hand from above
                     action = 'fold'
+        # it was not 3-bet pre_flop
         else:
-            # combo of 5 and 4, check/call as nuts can change.
-            if any(self.my_hand_rating_on_flop1[5]) and any(self.my_hand_rating_on_flop2[4]) \
-                    or any(self.my_hand_rating_on_flop1[4]) and any(self.my_hand_rating_on_flop2[5]):
-                if self.check_bet_three_bet_behind_me == 'check':
-                    action = 'bet'
-                elif self.check_bet_three_bet_behind_me == 'bet':
-                    action = 'call'
-                else:
-                    # it has been three_bet if we are here; should add a checked if someone is all in then perhaps worth a call.
-                    action = 'fold'
+            # if both 5.5
+            if any(self.my_hand_rating_on_flop1[5.5]) and any(self.my_hand_rating_on_flop2[5.5]):
+                # if I am last to act, it has only been bet and not 3-bet, and SPR>=3, then call to see what develops
+                if self.guy_to_right_bet_size and not self.positions_of_players_to_act_ahead_of_me and self.SPR_tracker >= 3:
+                    action = 'CALL'
 
-            # combo of 4 and 4 play passively, see what happens on future streets.
-            elif any(self.my_hand_rating_on_flop1[4]) and any(self.my_hand_rating_on_flop2[4]):
-                action = 'check'
-            else:
-                action = 'fold'
+        # check folding, my hand not strong enough
+        if not action and not self.guy_to_right_bet_size:
+            action = 'CALL'
+        elif not action and self.guy_to_right_bet_size:
+            action = 'FOLD'
 
         return action, extra_information
 
@@ -606,40 +598,40 @@ class AnalyseMyHandOnFlop(FlopHelper):
         """
         hand_ratings_flop1 = dict()
         hand_ratings_flop2 = dict()
-        hand_ratings_flop1[6] = [('self.overhouse_on_flop1', self.overhouse_on_flop1),
+        hand_ratings_flop1[7] = [('self.overhouse_on_flop1', self.overhouse_on_flop1),
                                  ('self.nut_flush_on_flop1', self.nut_flush_on_flop1),
                                  ('self.flopped_quads_flop1', self.flopped_quads_flop1)
                                  ]
-        hand_ratings_flop1[5] = [('self.flopped_top_set_no_made_flush_straight_flop1', self.flopped_top_set_no_made_flush_straight_flop1),
-                                 ('self.flopped_nut_flush_draw_nut_wrap_flop1', self.flopped_nut_flush_draw_nut_wrap_flop1),
-                                 ('self.flopped_nut_straight_with_house_or_flush_redraw_flop1', self.flopped_nut_straight_with_house_or_flush_redraw_flop1),
-                                 ('self.nut_house_on_flop1', self.nut_house_on_flop1)
-                                 ]
-        hand_ratings_flop1[4] = [('self.top_set_on_made_flush_straight_board_flop1', self.top_set_on_made_flush_straight_board_flop1),
-                                 ('self.nut_wrap_non_nut_flush_draw_flop1', self.nut_wrap_non_nut_flush_draw_flop1),
-                                 ('self.non_nut_wrap_nut_flush_draw_flop1', self.non_nut_wrap_nut_flush_draw_flop1),
-                                 ('self.flopped_underhouse_flop1', self.flopped_underhouse_flop1),
-                                 ('self.flopped_any_set_flop1', self.flopped_any_set_flop1),
-                                 ('self.flopped_house_with_overhouse_avail_flop1', self.flopped_house_with_overhouse_avail_flop1),
-                                 ('self.any_wrap_on_rainbow_board_flop1', self.any_wrap_on_rainbow_board_flop1),
-                                 ]
-        hand_ratings_flop2[6] = [('self.overhouse_on_flop2', self.overhouse_on_flop2),
+        hand_ratings_flop1[6.75] = [('self.flopped_top_set_no_made_flush_straight_flop1', self.flopped_top_set_no_made_flush_straight_flop1),
+                                    ('self.flopped_nut_flush_draw_nut_wrap_flop1', self.flopped_nut_flush_draw_nut_wrap_flop1),
+                                    ('self.flopped_nut_straight_with_house_or_flush_redraw_flop1', self.flopped_nut_straight_with_house_or_flush_redraw_flop1),
+                                    ('self.nut_house_on_flop1', self.nut_house_on_flop1)
+                                    ]
+        hand_ratings_flop1[5.5] = [('self.top_set_on_made_flush_straight_board_flop1', self.top_set_on_made_flush_straight_board_flop1),
+                                   ('self.nut_wrap_non_nut_flush_draw_flop1', self.nut_wrap_non_nut_flush_draw_flop1),
+                                   ('self.non_nut_wrap_nut_flush_draw_flop1', self.non_nut_wrap_nut_flush_draw_flop1),
+                                   ('self.flopped_underhouse_flop1', self.flopped_underhouse_flop1),
+                                   ('self.flopped_any_set_flop1', self.flopped_any_set_flop1),
+                                   ('self.flopped_house_with_overhouse_avail_flop1', self.flopped_house_with_overhouse_avail_flop1),
+                                   ('self.any_wrap_on_rainbow_board_flop1', self.any_wrap_on_rainbow_board_flop1),
+                                   ]
+        hand_ratings_flop2[7] = [('self.overhouse_on_flop2', self.overhouse_on_flop2),
                                  ('self.nut_flush_on_flop2', self.nut_flush_on_flop2),
                                  ('self.flopped_quads_flop2', self.flopped_quads_flop2)
                                  ]
-        hand_ratings_flop2[5] = [('self.flopped_top_set_no_made_flush_straight_flop2', self.flopped_top_set_no_made_flush_straight_flop2),
-                                 ('self.flopped_nut_flush_draw_nut_wrap_flop2', self.flopped_nut_flush_draw_nut_wrap_flop2),
-                                 ('self.flopped_nut_straight_with_house_or_flush_redraw_flop2', self.flopped_nut_straight_with_house_or_flush_redraw_flop2),
-                                 ('self.nut_house_on_flop2', self.nut_house_on_flop2)
-                                 ]
-        hand_ratings_flop2[4] = [('self.top_set_on_made_flush_straight_board_flop2', self.top_set_on_made_flush_straight_board_flop2),
-                                 ('self.nut_wrap_non_nut_flush_draw_flop2', self.nut_wrap_non_nut_flush_draw_flop2),
-                                 ('self.non_nut_wrap_nut_flush_draw_flop2', self.non_nut_wrap_nut_flush_draw_flop2),
-                                 ('self.flopped_underhouse_flop2', self.flopped_underhouse_flop2),
-                                 ('self.flopped_any_set_flop2', self.flopped_any_set_flop2),
-                                 ('self.flopped_house_with_overhouse_avail_flop2', self.flopped_house_with_overhouse_avail_flop2),
-                                 ('self.any_wrap_on_rainbow_board_flop2', self.any_wrap_on_rainbow_board_flop2),
-                                 ]
+        hand_ratings_flop2[6.75] = [('self.flopped_top_set_no_made_flush_straight_flop2', self.flopped_top_set_no_made_flush_straight_flop2),
+                                    ('self.flopped_nut_flush_draw_nut_wrap_flop2', self.flopped_nut_flush_draw_nut_wrap_flop2),
+                                    ('self.flopped_nut_straight_with_house_or_flush_redraw_flop2', self.flopped_nut_straight_with_house_or_flush_redraw_flop2),
+                                    ('self.nut_house_on_flop2', self.nut_house_on_flop2)
+                                    ]
+        hand_ratings_flop2[5.5] = [('self.top_set_on_made_flush_straight_board_flop2', self.top_set_on_made_flush_straight_board_flop2),
+                                   ('self.nut_wrap_non_nut_flush_draw_flop2', self.nut_wrap_non_nut_flush_draw_flop2),
+                                   ('self.non_nut_wrap_nut_flush_draw_flop2', self.non_nut_wrap_nut_flush_draw_flop2),
+                                   ('self.flopped_underhouse_flop2', self.flopped_underhouse_flop2),
+                                   ('self.flopped_any_set_flop2', self.flopped_any_set_flop2),
+                                   ('self.flopped_house_with_overhouse_avail_flop2', self.flopped_house_with_overhouse_avail_flop2),
+                                   ('self.any_wrap_on_rainbow_board_flop2', self.any_wrap_on_rainbow_board_flop2),
+                                   ]
         return hand_ratings_flop1, hand_ratings_flop2
 
     def check_bet_three_bet(self):

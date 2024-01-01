@@ -688,6 +688,7 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
             if not self.guy_to_right_bet_size:
                 return 'BET'
             else:
+                # Consider SPR here? What if guy is going call in, still call? I think so.
                 return 'CALL'
         # Think about adding more cases to call, when I am in position and no one to act ahead of me - especilly heads up.
         # or even non-heads up but I am in position (exploit) - like the chinese guy does all the time, blasts when:

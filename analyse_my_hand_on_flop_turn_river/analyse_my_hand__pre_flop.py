@@ -32,7 +32,7 @@ class PreFlopHandCombinations:
         self.suit_list = suit_list
 
         # high card
-        self.at_least_five_high_cards = self.count_high_cards()
+        self.at_least_four_high_cards = self.count_high_cards()
         # suited
         self.single_suited_ace_f = self.single_suited_ace()
         self.single_suited_king_f = self.single_suited_king()
@@ -52,8 +52,8 @@ class PreFlopHandCombinations:
         2) 5 high cards >= 9
         The above is with making a wrap in mind!
         """
-        num_high_cards_greater_than_10= 0
-        num_high_cards_greater_than_9= 0
+        num_high_cards_greater_than_10 = 0
+        num_high_cards_greater_than_9 = 0
         for card in self.num_list:
             if card >= 10:
                 num_high_cards_greater_than_10 += 1
@@ -287,7 +287,7 @@ class ShouldWePlayThisPreFlopHand(PreFlopHandCombinations):
         you hit something strong on flop. SOMETHING TO CONSIDER LATER ONCE THINGS ARE RUNNING.
 
         # high card
-        self.at_least_five_high_cards = self.count_high_cards()  # True or False
+        self.at_least_four_high_cards = self.count_high_cards()  # True or False
         # suited
         self.single_suited_ace_f = self.single_suited_ace()
         self.single_suited_king_f = self.single_suited_king()
@@ -306,7 +306,7 @@ class ShouldWePlayThisPreFlopHand(PreFlopHandCombinations):
         On the flop I check what I have already so no point doing the work here too.
         """
         pillars_of_a_strong_starting_hand = dict()
-        pillars_of_a_strong_starting_hand['high_cards'] = self.at_least_five_high_cards
+        pillars_of_a_strong_starting_hand['high_cards'] = self.at_least_four_high_cards
         pillars_of_a_strong_starting_hand['suited'] = [self.single_suited_ace_f, self.single_suited_king_f]
         pillars_of_a_strong_starting_hand['pair'] = self.high_pair_in_my_hand_f
         pillars_of_a_strong_starting_hand['running'] = [self.wrap_no_pair, self.wrap_plus_pair]
@@ -366,8 +366,8 @@ def read_white_text_on_image(image_path, ss):
         total_pixels = len(pixels)
         num_of_blue_pixel = 0
         for pixel in pixels:
-            R,G,B,C = pixel
-            if B > 110:
+            r, g, b, c = pixel
+            if b > 110:
                 num_of_blue_pixel += 1
         if num_of_blue_pixel >= 0.8*total_pixels:
             return 0
