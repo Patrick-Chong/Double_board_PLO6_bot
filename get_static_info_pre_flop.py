@@ -92,17 +92,6 @@ class MyPositionClass:
 class RunFirstOneTime(MyPositionClass):
 
     @staticmethod
-    def get_empty_seat_tracker(my_position):
-        des = DetectEmptySeat()
-        empty_seat_tracker = des.detect_empty_seat(my_position)
-        # Determine how many players are on table by counting non-empty seats
-        no_players_on_table = 0
-        for seat in empty_seat_tracker:
-            if not empty_seat_tracker[seat]:
-                no_players_on_table += 1
-        return empty_seat_tracker
-
-    @staticmethod
     def determine_table_blinds():
         blinds_of_table = table_blinds()
         possible_table_blinds = ('0.20/0.40', '0.30/0.60', '0.5/1', '1/2', '2/4')

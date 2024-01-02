@@ -26,12 +26,10 @@ class TestRunFirstOneTime:
         num_suit_list_generator = rfot.run_num_list_suit_list()
         num_list = num_suit_list_generator[0]  # [14, 14, 10, 6, 5, 2]
         suit_list = num_suit_list_generator[1]  # ['C', 'D', 'S', 'H', 'H', 'S']
-        empty_seat_tracker_f = RunFirstOneTime.get_empty_seat_tracker(my_position)
         big_blind = RunFirstOneTime.determine_table_blinds()
         print(f'type of my_position is: {type(my_position)} and the value is: {my_position}')
         print(f'type of num_list is: {type(num_list)} and the value is: {num_list}')
         print(f'type of suit_list is: {type(suit_list)} and the value is: {suit_list}')
-        print(f'type of empty_seat_tracker_f is: {type(empty_seat_tracker_f)} and the value is: {empty_seat_tracker_f}')
         print(f'type of big_blind is: {type(big_blind)} and the value is: {big_blind}')
         end_time = time.time()
         print(f'The total time it takes to run static information is {round(end_time-start_time)} seconds')

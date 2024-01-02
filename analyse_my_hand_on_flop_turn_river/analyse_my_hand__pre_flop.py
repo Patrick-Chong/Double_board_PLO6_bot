@@ -18,9 +18,8 @@ class PreFlopHandCombinations:
     e.g. singleSuitedAce, TwoPairedHighCard, etc.
     """
 
-    def __init__(self, my_position, empty_seat_tracker, num_list, suit_list):
+    def __init__(self, my_position, num_list, suit_list):
         self.my_position = my_position
-        self.empty_seat_tracker = empty_seat_tracker
         self.num_list = num_list
         self.suit_list = suit_list
 
@@ -231,8 +230,8 @@ class ShouldWePlayThisPreFlopHand(PreFlopHandCombinations):
     check if I have it.
     """
 
-    def __init__(self, my_position, num_list, suit_list, empty_seat_tracker=None):
-        PreFlopHandCombinations.__init__(self, my_position, empty_seat_tracker, num_list, suit_list)
+    def __init__(self, my_position, num_list, suit_list):
+        PreFlopHandCombinations.__init__(self, my_position, num_list, suit_list)
 
     """
     Keep in mind I will play 99% of hands from positions 5 and 6.
@@ -419,8 +418,8 @@ def scan_call_button_to_see_bet_amount():
 
 class RunPreFlop(ShouldWePlayThisPreFlopHand):
 
-    def __init__(self, my_position, num_list, suit_list, big_blind, stack_tracker, empty_seat_tracker):
-        ShouldWePlayThisPreFlopHand.__init__(self, my_position, empty_seat_tracker, num_list, suit_list)
+    def __init__(self, my_position, num_list, suit_list, big_blind, stack_tracker):
+        ShouldWePlayThisPreFlopHand.__init__(self, my_position, num_list, suit_list)
         self.big_blind = big_blind
         self.stack_tracker = stack_tracker
         self.pre_flop_bet_amount = scan_call_button_to_see_bet_amount()

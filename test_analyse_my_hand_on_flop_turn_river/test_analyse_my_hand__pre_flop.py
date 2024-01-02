@@ -5,7 +5,6 @@ import mock
 
 
 stack_tracker = {1: 500, 2: 600, 3: 100, 4: 100, 5: 300, 6: 200}
-empty_seat_tracker = {1: False, 2: False, 3: False, 4: False, 5: False, 6: False}
 SPR_tracker = {1: 5, 2: 6, 3: 1, 4: 1, 5: 3, 6: 2}
 guy_to_right_bet_size = 100
 positions_of_players_to_act_ahead_of_me = []
@@ -25,7 +24,7 @@ class TestPreFlopHandCombinations:
     ])
     @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand__pre_flop.PreFlopHandCombinations.check_for_wrap_and_wrap_plus_pair')
     def test_count_high_cards(self, mock_check_for_wrap_and_wrap_plus_pair, num_list, expected_res):
-        pfhc = PreFlopHandCombinations(my_position, empty_seat_tracker, num_list, suit_list)
+        pfhc = PreFlopHandCombinations(my_position, num_list, suit_list)
         pfhc.num_list = num_list
         actual_res = pfhc.count_high_cards()
         assert actual_res == expected_res
@@ -38,7 +37,7 @@ class TestPreFlopHandCombinations:
     ])
     @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand__pre_flop.PreFlopHandCombinations.check_for_wrap_and_wrap_plus_pair')
     def test_single_suited_ace(self, mock_check_for_wrap_and_wrap_plus_pair, num_list, suit_list, expected_res):
-        pfhc = PreFlopHandCombinations(my_position, empty_seat_tracker, num_list, suit_list)
+        pfhc = PreFlopHandCombinations(my_position, num_list, suit_list)
         pfhc.num_list = num_list
         pfhc.suit_list = suit_list
         actual_res = pfhc.single_suited_ace()
@@ -52,7 +51,7 @@ class TestPreFlopHandCombinations:
     ])
     @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand__pre_flop.PreFlopHandCombinations.check_for_wrap_and_wrap_plus_pair')
     def test_single_suited_king(self, mock_check_for_wrap_and_wrap_plus_pair, num_list, suit_list, expected_res):
-        pfhc = PreFlopHandCombinations(my_position, empty_seat_tracker, num_list, suit_list)
+        pfhc = PreFlopHandCombinations(my_position, num_list, suit_list)
         pfhc.num_list = num_list
         pfhc.suit_list = suit_list
         actual_res = pfhc.single_suited_king()
@@ -67,7 +66,7 @@ class TestPreFlopHandCombinations:
     ])
     @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand__pre_flop.PreFlopHandCombinations.check_for_wrap_and_wrap_plus_pair')
     def test_double_suited_ace(self, mock_check_for_wrap_and_wrap_plus_pair, num_list, suit_list, expected_res):
-        pfhc = PreFlopHandCombinations(my_position, empty_seat_tracker, num_list, suit_list)
+        pfhc = PreFlopHandCombinations(my_position, num_list, suit_list)
         pfhc.num_list = num_list
         pfhc.suit_list = suit_list
         actual_res = pfhc.double_suited_ace()
@@ -81,7 +80,7 @@ class TestPreFlopHandCombinations:
     ])
     @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand__pre_flop.PreFlopHandCombinations.check_for_wrap_and_wrap_plus_pair')
     def test_double_suited(self, mock_check_for_wrap_and_wrap_plus_pair, suit_list, expected_res):
-        pfhc = PreFlopHandCombinations(my_position, empty_seat_tracker, num_list, suit_list)
+        pfhc = PreFlopHandCombinations(my_position, num_list, suit_list)
         pfhc.suit_list = suit_list
         actual_res = pfhc.double_suited()
         assert actual_res == expected_res
@@ -94,7 +93,7 @@ class TestPreFlopHandCombinations:
     ])
     @mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand__pre_flop.PreFlopHandCombinations.check_for_wrap_and_wrap_plus_pair')
     def test_high_pairs_in_my_hand(self, mock_check_for_wrap_and_wrap_plus_pair, num_list, expected_res):
-        pfhc = PreFlopHandCombinations(my_position, empty_seat_tracker, num_list, suit_list)
+        pfhc = PreFlopHandCombinations(my_position, num_list, suit_list)
         pfhc.num_list = num_list
         actual_res = pfhc.high_pairs_in_my_hand()
         assert actual_res == expected_res
@@ -111,7 +110,7 @@ class TestPreFlopHandCombinations:
         As a gentle reminder, I will only consider 4 card wraps as wraps- after the epiphany that I encountered
         3 card wraps are far inferior to 4 card wraps.
         """
-        pfhc = PreFlopHandCombinations(my_position, empty_seat_tracker, num_list, suit_list)
+        pfhc = PreFlopHandCombinations(my_position, num_list, suit_list)
         pfhc.num_list = num_list
         actual_res = pfhc.check_for_wrap_and_wrap_plus_pair()
         assert actual_res == expected_res
@@ -134,6 +133,6 @@ class TestShouldWePlayThisPreFlopHand:
                 with mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand__pre_flop.PreFlopHandCombinations.check_for_wrap_and_wrap_plus_pair', return_value=(wrap_no_pair, wrap_plus_pair)):
                     with mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand__pre_flop.PreFlopHandCombinations.high_pairs_in_my_hand', return_value=high_pairs_in_my_hand):
                         with mock.patch('analyse_my_hand_on_flop_turn_river.analyse_my_hand__pre_flop.PreFlopHandCombinations.count_high_cards', return_value=count_high_cards):
-                            swptpfh = ShouldWePlayThisPreFlopHand(my_position, empty_seat_tracker, num_list, suit_list)
+                            swptpfh = ShouldWePlayThisPreFlopHand(my_position, num_list, suit_list)
                             actual_res = swptpfh.does_my_hand_meet_at_least_three_pillars()
                             assert actual_res == expected_res

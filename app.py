@@ -38,9 +38,9 @@ def go_to_the_right_street(action, street_we_are_on, extra_information, street_c
 
 def run_this_on_pre_flop_app_dot_py():
 	plip = PlayersLeftInPot()
-	fold_tracker = plip.detect_if_cards_in_hand(my_position, empty_seat_tracker)
+	fold_tracker = plip.detect_if_cards_in_hand(my_position)
 	stack_tracker = get_stack_sizes(my_position, fold_tracker)  # Set stack to 0 if someone folded; make this the universal way to check
-	RPF = RunPreFlop(my_position, num_list, suit_list, big_blind, stack_tracker, empty_seat_tracker)
+	RPF = RunPreFlop(my_position, num_list, suit_list, big_blind, stack_tracker)
 	action_pre_flop, extra_information = RPF.pre_flop_action()
 	# all of the above takes a total of 6 seconds to run!
 	click_fold_call_bet(action_pre_flop)
@@ -48,7 +48,7 @@ def run_this_on_pre_flop_app_dot_py():
 
 
 def run_this_on_the_flop_app_dot_py(action, extra_information):
-	fold_tracker = plip.detect_if_cards_in_hand(my_position, empty_seat_tracker)
+	fold_tracker = plip.detect_if_cards_in_hand(my_position)
 	stack_tracker = get_stack_sizes(my_position, fold_tracker)  # Set stack to 0 if someone folded; make this the universal way to check
 
 	PSABM = PotSizeAndActionBehindMe(my_position, fold_tracker, stack_tracker)
@@ -69,7 +69,7 @@ def run_this_on_the_flop_app_dot_py(action, extra_information):
 
 
 def run_this_on_the_turn_app_dot_py(action_on_flop, extra_information):
-	fold_tracker = plip.detect_if_cards_in_hand(my_position, empty_seat_tracker)
+	fold_tracker = plip.detect_if_cards_in_hand(my_position)
 	stack_tracker = get_stack_sizes(my_position, fold_tracker)  # Set stack to 0 if someone folded; make this the universal way to check
 
 	PSABM = PotSizeAndActionBehindMe(my_position, fold_tracker, stack_tracker)
@@ -92,7 +92,7 @@ def run_this_on_the_turn_app_dot_py(action_on_flop, extra_information):
 
 def run_this_on_the_river_app_dot_py(action_on_turn, extra_information):
 
-	fold_tracker = plip.detect_if_cards_in_hand(my_position, empty_seat_tracker)
+	fold_tracker = plip.detect_if_cards_in_hand(my_position)
 	stack_tracker = get_stack_sizes(my_position, fold_tracker)  # Set stack to 0 if someone folded; make this the universal way to check
 
 	PSABM = PotSizeAndActionBehindMe(my_position, fold_tracker, stack_tracker)
@@ -150,12 +150,10 @@ while True:
 		num_suit_list_generator = rfot.run_num_list_suit_list()
 		num_list = num_suit_list_generator[0]
 		suit_list = num_suit_list_generator[1]
-		empty_seat_tracker = rfot.get_empty_seat_tracker(my_position)
 		big_blind = rfot.determine_table_blinds()
 		print(f'my_position:{my_position}')
 		print(f'num_list:{num_list}')
 		print(f'suit_list:{suit_list}')
-		print(f'empty_seat_tracker:{empty_seat_tracker}')
 		print(f'big_blind:{big_blind}')
 		if ftr.determine_street() == 'pre_flop_play' or ftr.determine_street() == 'on_flop':
 			print('run new hand analysis')
