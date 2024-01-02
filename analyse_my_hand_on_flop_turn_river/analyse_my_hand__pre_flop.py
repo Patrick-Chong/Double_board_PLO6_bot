@@ -1,10 +1,7 @@
 """
 EXTRA NOTES:
-
 - Note the 'raise'/'bet' button always says 'bet' after the flop and 'raise' before the flop; but they represent the same thing.
-- Note that hands are always dealt with the HIGHEST CARD to the far left and the LOWEST CARD to the far right, this should
-  help a lot with indexing;
-  e.g. nums_list = [13,12,12,7,5,3] , suit_list = ['D','D','C','H','S','S']
+
 """
 from collections import defaultdict
 from all_the_steps_with_coordinates.step_7_detect_whos_turn_to_act.whos_turn_to_act import IsItMyTurnToAct
@@ -19,10 +16,6 @@ class PreFlopHandCombinations:
     """
     This class defined all the general functions that helps to build up the type of hand;
     e.g. singleSuitedAce, TwoPairedHighCard, etc.
-
-    These should just return True or False.
-    Because on the flop I consider what I have already compared to the flop, so no need to
-    do such work here twice.
     """
 
     def __init__(self, my_position, empty_seat_tracker, num_list, suit_list):

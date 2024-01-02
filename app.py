@@ -1,5 +1,4 @@
 from all_the_steps_with_coordinates.step_2_my_hand.is_my_hand_folded import check_if_my_cards_are_live
-from all_the_steps_with_coordinates.step_2_my_hand.app import run_num_list_suit_list
 from all_the_steps_with_coordinates.step_3_stack_sizes.my_stack import get_stack_sizes
 from all_the_steps_with_coordinates.step_6_number_of_players_in_pot.num_of_players_in_pot import PlayersLeftInPot
 from all_the_steps_with_coordinates.step_4_flop_turn_river.flop_turn_river import FlopTurnRiver
@@ -126,13 +125,13 @@ def run_new_hand():
 			street_we_are_on = ftr.determine_street()
 			print(f'waiting for my turn to act, we are on street {street_we_are_on}')
 		street_we_are_on = ftr.determine_street()
-		action, extra_information, current_street = go_to_the_right_street(action, street_we_are_on, extra_information,
-																		   street_count)
-		# Check if we are in a new hand
+		action, extra_information, current_street = go_to_the_right_street(action, street_we_are_on, extra_information, street_count)
+		# Check if we are in a new hand; by checking if running num_list function again shows a new hand or not
 		if action == 'fold':
 			break
 		if current_street > 0 and street_we_are_on == 'pre_flop':
-			if num_list != run_num_list_suit_list()[0]:
+			run_num_list_suit_list_generator = rfot.run_num_list_suit_list()
+			if num_list != run_num_list_suit_list_generator[0]:
 				break
 
 	print('end of hand detected, moving to new hand')
@@ -148,10 +147,11 @@ while True:
 		print('we are in a live hand')
 		# generate static information
 		my_position = rfot.take_SS_and_determine_position()
-		num_list = rfot.num_list
-		suit_list = rfot.suit_list
-		empty_seat_tracker = rfot.empty_seat_tracker_f
-		big_blind = rfot.big_blind
+		num_suit_list_generator = rfot.run_num_list_suit_list()
+		num_list = num_suit_list_generator[0]
+		suit_list = num_suit_list_generator[1]
+		empty_seat_tracker = rfot.get_empty_seat_tracker(my_position)
+		big_blind = rfot.determine_table_blinds()
 		print(f'my_position:{my_position}')
 		print(f'num_list:{num_list}')
 		print(f'suit_list:{suit_list}')

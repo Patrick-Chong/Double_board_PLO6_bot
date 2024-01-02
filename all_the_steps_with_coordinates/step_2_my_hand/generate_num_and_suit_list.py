@@ -155,6 +155,7 @@ def generate_suit_list_from_my_hand():
 
 	return collect_card_suit()
 
+
 def generate_num_list_from_my_hand(): 
 	"""
 	crop_rectangle tuple represents (LEFT, UPPER, RIGHT, LOWER).

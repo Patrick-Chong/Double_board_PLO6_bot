@@ -151,7 +151,7 @@ class FlopHelper:
         total_distance_of_flop_cards += flop_nums[0] - flop_nums[1]
         total_distance_of_flop_cards += flop_nums[1] - flop_nums[2]
         if not 4 >= total_distance_of_flop_cards > 1:
-            return False, None, None  # there is no made straight on the flop
+            return False, [], None  # there is no made straight on the flop
 
         # There is a made straight on flop, find the two card combinations that complete it, and determine if it's open or closed
         # case 1) one gap between each card, e.g. 9 7 5
@@ -402,7 +402,7 @@ class AnalyseMyHandOnFlop(FlopHelper):
         # Rated 4
         # 1) top set on made straight/flush  2) nut wrap with non nut flush draw  / or nut flush draw non nut wrap
         # 3) underhouse  4) any set 5) house with over house available   6) wrap on rainbow board
-        self.top_set_on_made_flush_straight_board_generator = self.top_set_on_made_flush_straight_board()
+        self.top_set_on_made_flush_straight_board_generator = self.any_set_on_made_flush_straight_board()
         self.top_set_on_made_flush_straight_board_flop1 = self.top_set_on_made_flush_straight_board_generator[0]
         self.top_set_on_made_flush_straight_board_flop2 = self.top_set_on_made_flush_straight_board_generator[1]
 
@@ -464,32 +464,30 @@ class AnalyseMyHandOnFlop(FlopHelper):
         # are all in, I might fold according to my bot, but that's ridiculous in real time, as I'd call that all day.
 
         # rating of 7 one hand and anything on other hand
-        if any(self.my_hand_rating_on_flop1[7]) or any(self.my_hand_rating_on_flop2[7]):
-            action = 'bet'
+        if self.my_hand_rating_on_flop1[7] or self.my_hand_rating_on_flop2[7]:
+            action = 'BET'
         # rating of 6.75 one hand and 5.5 another
-        elif (any(self.my_hand_rating_on_flop1[6.75]) and any(self.my_hand_rating_on_flop2[5.5])) or \
-                (any(self.my_hand_rating_on_flop2[6.75]) and any(self.my_hand_rating_on_flop1[5.5])):
-            action = 'bet'
-
+        elif (self.my_hand_rating_on_flop1[6.75] and self.my_hand_rating_on_flop2[5.5]) or \
+                (self.my_hand_rating_on_flop2[6.75] and self.my_hand_rating_on_flop1[5.5]):
+            action = 'BET'
         # special case if it was 3-bet pre_flop and ace on flop (someone likely has aces); if I don't have at least 6.75/5 hand, fold
-        if extra_information.get('three_bet_pre_flop'):
+        if extra_information and extra_information.get('three_bet_pre_flop'):
             if self.flop1[0][0] == 14 or self.flop2[0][0] == 14:
-                if not action == 'bet':  # I have at least a 6.75/5 hand from above
-                    action = 'fold'
+                if not action == 'BET':  # I have at least a 6.75/5 hand from above
+                    action = 'FOLD'
         # it was not 3-bet pre_flop
         else:
             # if both 5.5
-            if any(self.my_hand_rating_on_flop1[5.5]) and any(self.my_hand_rating_on_flop2[5.5]):
+            if self.my_hand_rating_on_flop1[5.5] and self.my_hand_rating_on_flop2[5.5]:
                 # if I am last to act, it has only been bet and not 3-bet, and SPR>=3, then call to see what develops
-                if self.guy_to_right_bet_size and not self.positions_of_players_to_act_ahead_of_me and self.SPR_tracker >= 3:
+                if self.guy_to_right_bet_size and self.check_bet_three_bet_behind_me == 'bet' and \
+                        not self.positions_of_players_to_act_ahead_of_me and max(self.SPR_tracker.values()) >= 3:
                     action = 'CALL'
-
         # check folding, my hand not strong enough
         if not action and not self.guy_to_right_bet_size:
             action = 'CALL'
         elif not action and self.guy_to_right_bet_size:
             action = 'FOLD'
-
         return action, extra_information
 
     def my_hand_ratings_on_both_flops(self):
@@ -514,40 +512,24 @@ class AnalyseMyHandOnFlop(FlopHelper):
         """
         hand_ratings_flop1 = dict()
         hand_ratings_flop2 = dict()
-        hand_ratings_flop1[7] = [('self.overhouse_on_flop1', self.overhouse_on_flop1),
-                                 ('self.nut_flush_on_flop1', self.nut_flush_on_flop1),
-                                 ('self.flopped_quads_flop1', self.flopped_quads_flop1)
-                                 ]
-        hand_ratings_flop1[6.75] = [('self.flopped_top_set_no_made_flush_straight_flop1', self.flopped_top_set_no_made_flush_straight_flop1),
-                                    ('self.flopped_nut_flush_draw_nut_wrap_flop1', self.flopped_nut_flush_draw_nut_wrap_flop1),
-                                    ('self.flopped_nut_straight_with_house_or_flush_redraw_flop1', self.flopped_nut_straight_with_house_or_flush_redraw_flop1),
-                                    ('self.nut_house_on_flop1', self.nut_house_on_flop1)
-                                    ]
-        hand_ratings_flop1[5.5] = [('self.top_set_on_made_flush_straight_board_flop1', self.top_set_on_made_flush_straight_board_flop1),
-                                   ('self.nut_wrap_non_nut_flush_draw_flop1', self.nut_wrap_non_nut_flush_draw_flop1),
-                                   ('self.non_nut_wrap_nut_flush_draw_flop1', self.non_nut_wrap_nut_flush_draw_flop1),
-                                   ('self.flopped_underhouse_flop1', self.flopped_underhouse_flop1),
-                                   ('self.flopped_any_set_flop1', self.flopped_any_set_flop1),
-                                   ('self.flopped_house_with_overhouse_avail_flop1', self.flopped_house_with_overhouse_avail_flop1),
-                                   ('self.any_wrap_on_rainbow_board_flop1', self.any_wrap_on_rainbow_board_flop1),
-                                   ]
-        hand_ratings_flop2[7] = [('self.overhouse_on_flop2', self.overhouse_on_flop2),
-                                 ('self.nut_flush_on_flop2', self.nut_flush_on_flop2),
-                                 ('self.flopped_quads_flop2', self.flopped_quads_flop2)
-                                 ]
-        hand_ratings_flop2[6.75] = [('self.flopped_top_set_no_made_flush_straight_flop2', self.flopped_top_set_no_made_flush_straight_flop2),
-                                    ('self.flopped_nut_flush_draw_nut_wrap_flop2', self.flopped_nut_flush_draw_nut_wrap_flop2),
-                                    ('self.flopped_nut_straight_with_house_or_flush_redraw_flop2', self.flopped_nut_straight_with_house_or_flush_redraw_flop2),
-                                    ('self.nut_house_on_flop2', self.nut_house_on_flop2)
-                                    ]
-        hand_ratings_flop2[5.5] = [('self.top_set_on_made_flush_straight_board_flop2', self.top_set_on_made_flush_straight_board_flop2),
-                                   ('self.nut_wrap_non_nut_flush_draw_flop2', self.nut_wrap_non_nut_flush_draw_flop2),
-                                   ('self.non_nut_wrap_nut_flush_draw_flop2', self.non_nut_wrap_nut_flush_draw_flop2),
-                                   ('self.flopped_underhouse_flop2', self.flopped_underhouse_flop2),
-                                   ('self.flopped_any_set_flop2', self.flopped_any_set_flop2),
-                                   ('self.flopped_house_with_overhouse_avail_flop2', self.flopped_house_with_overhouse_avail_flop2),
-                                   ('self.any_wrap_on_rainbow_board_flop2', self.any_wrap_on_rainbow_board_flop2),
-                                   ]
+        hand_ratings_flop1[7] = True if any([self.overhouse_on_flop1, self.nut_flush_on_flop1, self.flopped_quads_flop1]) else False
+
+        hand_ratings_flop1[6.75] = True if any([self.flopped_top_set_no_made_flush_straight_flop1, self.flopped_nut_flush_draw_nut_wrap_flop1,
+                                                self.flopped_nut_straight_with_house_or_flush_redraw_flop1, self.nut_house_on_flop1]) else False
+
+        hand_ratings_flop1[5.5] = True if any([self.top_set_on_made_flush_straight_board_flop1, self.nut_wrap_non_nut_flush_draw_flop1,
+                                               self.non_nut_wrap_nut_flush_draw_flop1, self.flopped_underhouse_flop1, self.flopped_any_set_flop1,
+                                               self.flopped_house_with_overhouse_avail_flop1, self.any_wrap_on_rainbow_board_flop1]) else False
+
+        hand_ratings_flop2[7] = True if any([self.overhouse_on_flop2, self.nut_flush_on_flop2, self.flopped_quads_flop2]) else False
+
+        hand_ratings_flop2[6.75] = True if any([self.flopped_top_set_no_made_flush_straight_flop2, self.flopped_nut_flush_draw_nut_wrap_flop2,
+                                                self.flopped_nut_straight_with_house_or_flush_redraw_flop2, self.nut_house_on_flop2]) else False
+
+        hand_ratings_flop2[5.5] = True if any([self.top_set_on_made_flush_straight_board_flop2, self.nut_wrap_non_nut_flush_draw_flop2,
+                                              self.non_nut_wrap_nut_flush_draw_flop2, self.flopped_underhouse_flop2, self.flopped_any_set_flop2,
+                                              self.flopped_house_with_overhouse_avail_flop2, self.any_wrap_on_rainbow_board_flop2]) else False
+
         return hand_ratings_flop1, hand_ratings_flop2
 
     def check_bet_three_bet(self):
@@ -577,12 +559,14 @@ class AnalyseMyHandOnFlop(FlopHelper):
            Anything inbetween also falls in category 2. of course; 2. is like the upper end, meaning anything
            above 27x won't go in by the river.
         """
-        highest_spr_in_play = max(spr for spr in self.SPR_tracker.values())
+        highest_spr_in_play = max(self.SPR_tracker.values())
         return False if highest_spr_in_play <= 15 else True
 
     def helper_flopped_nut_flush_draw(self):
         """
-        This function will check if I have the nut flush draw on either flops.
+        This function will check if :
+        1) There is a flush draw on either flops
+        2) If so, if I have the nut flush draw on either flops.
         """
         flopped_nut_flush_draw_flop1 = False
         flopped_nut_flush_draw_flop2 = False
@@ -597,6 +581,7 @@ class AnalyseMyHandOnFlop(FlopHelper):
         for index in flop1_nut_flush_draw_nums_index_tracker:
             if self.suit_list[index] == self.nut_flush_draw_suit_on_flop1:
                 flopped_nut_flush_draw_flop1 = True
+
         if self.is_flush_draw_on_flop2:
             for card in self.num_list:
                 if card == self.nut_flush_draw_nums_on_flop2:
@@ -644,35 +629,44 @@ class AnalyseMyHandOnFlop(FlopHelper):
                 overhouse_flop2 = True
         return overhouse_flop1, overhouse_flop2
 
-    def nut_flush_check(self):
+    def check_nut_house_on_flop(self):
         """
-        This function will check if I have the nut flush.
-        A bit awkward to check if I have nut flush; the way I do it is to check if in my hand I have the particular
-        number of the nut flush card, and keep track of all the INDEXES of the nums in my hand that matches this number.
-        Then need to look in my hand and check if for those INDEXES, the suit is the same as the nut flush suit.
+        This function will return if we have the nut house.
+        This is only possible if we have a 'high' paired board, e.g. 10 10 4
         """
-        flop1_nut_flush = False
-        flop2_nut_flush = False
-        flop1_nut_flush_nums_index_tracker = []
-        flop2_nut_flush_nums_index_tracker = []
+        flopped_nut_house_on_flop1 = False
+        flopped_nut_house_on_flop2 = False
+        if self.high_or_low_paired_board_flop1 == 'high':
+            if self.flop1_nums[1] in self.num_list and self.flop1_nums[2] in self.num_list:
+                flopped_nut_house_on_flop1 = True
+        if self.high_or_low_paired_board_flop2 == 'high':
+            if self.flop2_nums[1] in self.num_list and self.flop2_nums[2] in self.num_list:
+                flopped_nut_house_on_flop2 = True
 
-        if self.is_flush_completed_on_flop1:
-            for card in self.num_list:
-                if card == self.nut_flush_nums_flop1:
-                    flop1_nut_flush_nums_index_tracker.append(self.num_list.index(card))
-        for index in flop1_nut_flush_nums_index_tracker:
-            if self.suit_list[index] == self.nut_flush_suit_flop1:
-                flop1_nut_flush = True
+        return flopped_nut_house_on_flop1, flopped_nut_house_on_flop2
 
-        if self.is_flush_completed_on_flop2:
-            for card in self.num_list:
-                if card == self.nut_flush_nums_flop2:
-                    flop2_nut_flush_nums_index_tracker.append(self.num_list.index(card))
-        for index in flop2_nut_flush_nums_index_tracker:
-            if self.suit_list[index] == self.nut_flush_suit_flop2:
-                flop2_nut_flush = True
+    def flopped_under_house(self):
+        """
+        This function will return if we flopped an underhouse on either flops.
+        And underhouse is if board is 10 10 4 and I have 4 4 in my hand.
+        """
+        flopped_underhouse_flop1 = True if self.high_or_low_paired_board_flop1 == 'high' and \
+            self.num_list.count(self.flop1_nums[2]) >= 2 else False
+        flopped_underhouse_flop2 = True if self.high_or_low_paired_board_flop2 == 'high' and \
+            self.num_list.count(self.flop2_nums[2]) >= 2 else False
 
-        return flop1_nut_flush, flop2_nut_flush
+        return flopped_underhouse_flop1, flopped_underhouse_flop2
+
+    def flopped_house_with_overhouse_avail(self):
+        """
+        e.g. flop: 10 10 4 and I have a 10 and a 4 in my hand.
+        """
+        flopped_house_with_overhouse_avail_flop1 = True if self.high_or_low_paired_board_flop1 == 'high' and \
+            all(card in self.num_list for card in (self.flop1_nums[1], self.flop1_nums[2])) else False
+        flopped_house_with_overhouse_avail_flop2 = True if self.high_or_low_paired_board_flop2 == 'high' and \
+            all(card in self.num_list for card in (self.flop2_nums[1], self.flop2_nums[2])) else False
+
+        return flopped_house_with_overhouse_avail_flop1, flopped_house_with_overhouse_avail_flop2
 
     def quads_checker(self):
         flopped_quads_flop1 = False
@@ -691,6 +685,35 @@ class AnalyseMyHandOnFlop(FlopHelper):
                 flopped_quads_flop2 = True
         return flopped_quads_flop1, flopped_quads_flop2
 
+    def nut_flush_check(self):
+        """
+        This function will check if I have the nut flush.
+        A bit awkward to check if I have nut flush; the way I do it is to check if in my hand I have the particular
+        number of the nut flush card, and keep track of all the INDEXES of the nums in my hand that matches this number.
+        Then need to look in my hand and check if for those INDEXES, the suit is the same as the nut flush suit.
+        """
+        flop1_nut_flush = False
+        flop2_nut_flush = False
+        flop1_nut_flush_nums_index_tracker = []
+        flop2_nut_flush_nums_index_tracker = []
+        if self.is_flush_completed_on_flop1:
+            for card in self.num_list:
+                if card == self.nut_flush_nums_flop1:
+                    flop1_nut_flush_nums_index_tracker.append(self.num_list.index(card))
+        for index in flop1_nut_flush_nums_index_tracker:
+            if self.suit_list[index] == self.nut_flush_suit_flop1:
+                flop1_nut_flush = True
+
+        if self.is_flush_completed_on_flop2:
+            for card in self.num_list:
+                if card == self.nut_flush_nums_flop2:
+                    flop2_nut_flush_nums_index_tracker.append(self.num_list.index(card))
+        for index in flop2_nut_flush_nums_index_tracker:
+            if self.suit_list[index] == self.nut_flush_suit_flop2:
+                flop2_nut_flush = True
+
+        return flop1_nut_flush, flop2_nut_flush
+
     def top_set_no_made_flush_straight_checker(self):
         """
         This function will return True if I have top set and there is no made flush or straight on the flop.
@@ -707,23 +730,36 @@ class AnalyseMyHandOnFlop(FlopHelper):
 
         return top_set_no_made_flush_straight_flop1, top_set_no_made_flush_straight_flop2
 
+    def any_set_no_made_flush_straight_checker(self):
+        # check if we have any set
+        any_set_no_made_flush_straight_checker_flop1 = True if self.flopped_set_flop1 else False
+        any_set_no_made_flush_straight_checker_flop2 = True if self.flopped_set_flop2 else False
+
+        # check if there are any made flush or straight completed on either flops
+        if self.is_flush_completed_on_flop1 or self.is_straight_completed_on_flop1:
+            any_set_no_made_flush_straight_checker_flop1 = False
+        if self.is_flush_completed_on_flop2 or self.is_straight_completed_on_flop2:
+            any_set_no_made_flush_straight_checker_flop2 = False
+
+        return any_set_no_made_flush_straight_checker_flop1, any_set_no_made_flush_straight_checker_flop2
+
     def nut_flush_draw_nut_wrap(self):
         flopped_nut_flush_draw_nut_wrap_flop1 = False
         flopped_nut_flush_draw_nut_wrap_flop2 = False
 
         # check if there is a wrap and I have nut wrap
         if self.three_card_wrap_combis_on_flop1:
-            if all(card in self.num_list for card in self.three_card_wrap_combis_on_flop1):
+            if all(card in self.num_list for card in self.three_card_wrap_combis_on_flop1[0]):
                 flopped_nut_flush_draw_nut_wrap_flop1 = True
         if self.three_card_wrap_combis_on_flop2:
-            if all(card in self.num_list for card in self.three_card_wrap_combis_on_flop2):
+            if all(card in self.num_list for card in self.three_card_wrap_combis_on_flop2[0]):
                 flopped_nut_flush_draw_nut_wrap_flop2 = True
 
         # check if I have nut flush draw as well
-        if flopped_nut_flush_draw_nut_wrap_flop1 and self.flopped_nut_flush_draw_flop1:
-            flopped_nut_flush_draw_nut_wrap_flop1 = True
-        if flopped_nut_flush_draw_nut_wrap_flop2 and self.flopped_nut_flush_draw_flop2:
-            flopped_nut_flush_draw_nut_wrap_flop2 = True
+        if not self.flopped_nut_flush_draw_flop1:
+            flopped_nut_flush_draw_nut_wrap_flop1 = False
+        if not self.flopped_nut_flush_draw_flop2:
+            flopped_nut_flush_draw_nut_wrap_flop2 = False
 
         return flopped_nut_flush_draw_nut_wrap_flop1, flopped_nut_flush_draw_nut_wrap_flop2
 
@@ -749,33 +785,17 @@ class AnalyseMyHandOnFlop(FlopHelper):
 
         return flopped_nut_straight_with_house_flush_redraw_flop1, flopped_nut_straight_with_house_flush_redraw_flop2
 
-    def check_nut_house_on_flop(self):
+    def any_set_on_made_flush_straight_board(self):
         """
-        This function will return if we have the nut house.
-        This is only possible if we have a 'high' paired board, e.g. 10 10 4
-        """
-        flopped_nut_house_on_flop1 = False
-        flopped_nut_house_on_flop2 = False
-        if self.high_or_low_paired_board_flop1 == 'high':
-            if self.flop1_nums[1] in self.num_list and self.flop1_nums[2] in self.num_list:
-                flopped_nut_house_on_flop1 = True
-        if self.high_or_low_paired_board_flop2 == 'high':
-            if self.flop2_nums[1] in self.num_list and self.flop2_nums[2] in self.num_list:
-                flopped_nut_house_on_flop2 = True
-
-        return flopped_nut_house_on_flop1, flopped_nut_house_on_flop2
-
-    def top_set_on_made_flush_straight_board(self):
-        """
-        This function will return whether I have top set on a made flush or made straight flop.
+        This function will return whether I have any set on a made flush or made straight flop.
         """
         top_set_on_made_flush_straight_flop1 = False
         top_set_on_made_flush_straight_flop2 = False
 
-        if self.flopped_set_flop1 == 'high':
+        if self.flopped_set_flop1:
             if self.is_straight_completed_on_flop1 or self.is_flush_completed_on_flop1:
                 top_set_on_made_flush_straight_flop1 = True
-        if self.flopped_set_flop2 == 'high':
+        if self.flopped_set_flop2:
             if self.is_straight_completed_on_flop2 or self.is_flush_completed_on_flop2:
                 top_set_on_made_flush_straight_flop2 = True
 
@@ -784,9 +804,9 @@ class AnalyseMyHandOnFlop(FlopHelper):
     def nut_wrap_non_nut_flush_draw(self):
         # check if there is a wrap and I have nut wrap
         flopped_nut_wrap_flop1 = True if self.three_card_wrap_combis_on_flop1 and \
-            all(card in self.num_list for card in self.three_card_wrap_combis_on_flop1) else False
+            all(card in self.num_list for card in self.three_card_wrap_combis_on_flop1[0]) else False
         flopped_nut_wrap_flop2 = True if self.three_card_wrap_combis_on_flop2 and \
-            all(card in self.num_list for card in self.three_card_wrap_combis_on_flop2) else False
+            all(card in self.num_list for card in self.three_card_wrap_combis_on_flop2[0]) else False
 
         # check if I flopped any flush draw
         flopped_nut_wrap_non_nut_flush_draw_flop1 = True if self.is_flush_draw_on_flop1 and \
@@ -807,29 +827,6 @@ class AnalyseMyHandOnFlop(FlopHelper):
         flopped_non_nut_wrap_nut_flush_draw_flop1 = True if self.flopped_nut_flush_draw_flop1 and flopped_any_wrap_flop1 else False
         flopped_non_nut_wrap_nut_flush_draw_flop2 = True if self.flopped_nut_flush_draw_flop2 and flopped_any_wrap_flop2 else False
         return flopped_non_nut_wrap_nut_flush_draw_flop1, flopped_non_nut_wrap_nut_flush_draw_flop2
-
-    def flopped_under_house(self):
-        """
-        This function will return if we flopped an underhouse on either flops.
-        And underhouse is if board is 10 10 4 and I have 4 4 in my hand.
-        """
-        flopped_underhouse_flop1 = True if self.high_or_low_paired_board_flop1 == 'low' and \
-            self.num_list.count(self.flop1_nums[2]) >= 2 else False
-        flopped_underhouse_flop2 = True if self.high_or_low_paired_board_flop2 == 'low' and \
-            self.num_list.count(self.flop2_nums[2]) >= 2 else False
-
-        return flopped_underhouse_flop1, flopped_underhouse_flop2
-
-    def flopped_house_with_overhouse_avail(self):
-        """
-        e.g. flop: 10 10 4 and I have a 10 and a 4 in my hand.
-        """
-        flopped_house_with_overhouse_avail_flop1 = True if self.high_or_low_paired_board_flop1 == 'high' and \
-            all(card in self.num_list for card in (self.flop1_nums[1], self.flop1_nums[2])) else False
-        flopped_house_with_overhouse_avail_flop2 = True if self.high_or_low_paired_board_flop2 == 'high' and \
-            all(card in self.num_list for card in (self.flop2_nums[1], self.flop2_nums[2])) else False
-
-        return flopped_house_with_overhouse_avail_flop1, flopped_house_with_overhouse_avail_flop2
 
     def any_wrap_on_rainbow_board(self):
         """rainbow board is one where there is no flush draw available and no completed flush"""
