@@ -51,24 +51,18 @@ class DetectEmptySeat:
 
 		# My seat- even tho this is never empty, I need to calculate it for positioning/indexing or it will be trickier
 		# pos1 - MY seat will never be empty
-
 		# Guy to my left
 		pos2 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos2.png", region=(614, 1087, 81, 28))
 		pos2_path = f"{sys.path[0]}/photo_dump/pos2.png"
-
 		# # Guy two to my left
 		pos3 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos3.png", region=(665, 673, 81, 28))
 		pos3_path = f"{sys.path[0]}/photo_dump/pos3.png"
-
 		# # Guy top of screen
 		pos4 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos4.png", region=(919, 432, 81, 28))
 		pos4_path = f"{sys.path[0]}/photo_dump/pos4.png"
-
 		# # Guy top of screen + 1
 		pos5 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos5.png", region=(1172, 673, 81, 28))
 		pos5_path = f"{sys.path[0]}/photo_dump/pos5.png"
-
-
 		# # Guy top of screen + 2
 		pos6 = pyautogui.screenshot(f"{sys.path[0]}/photo_dump/pos6.png", region=(1220, 1087, 81, 28))
 		pos6_path = f"{sys.path[0]}/photo_dump/pos6.png"
