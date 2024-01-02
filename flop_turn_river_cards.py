@@ -97,11 +97,11 @@ class TheFlop:
 		differences = []
 
 		for pixel in pixels: 
-			current_H_A_D = 0
-			R,G,B,C = pixel
-			current_H_A_D += abs(R - G)
-			current_H_A_D += abs(G - B)
-			differences.append(current_H_A_D)
+			current_h_a_d = 0
+			r, g, b, c = pixel
+			current_h_a_d += abs(r - g)
+			current_h_a_d += abs(g - b)
+			differences.append(current_h_a_d)
 		differences = list(filter(lambda x: (x > 60), differences))
 
 		# Not a black suit
@@ -195,13 +195,6 @@ class TheFlop:
 
 class TheTurn(TheFlop):
 
-	def sort_turn_and_river_nums(self, street):
-		"""
-		This function will sort the turn or river, whichever we pass into this function; it will sort it
-		using nums, and it will sort it in descending order.
-		"""
-		return sorted(street, key=lambda x: x[0], reverse=True)
-
 	def detect_turn_nums_and_suit(self):
 		"""
 		This function will simply take a picture of the two turn cards, and return them in
@@ -209,11 +202,11 @@ class TheTurn(TheFlop):
 
 		Detects perfectly, only thing it misreads is the 7 (that is non-black)
 		"""
-		# VIDEO COORDINATES - check coordinates- they're not right
-		pyautogui.screenshot(f"{sys.path[0]}/photo_dump/ss_of_flop1.png", region=(1022, 781, 30, 33))
-		pyautogui.screenshot(f"{sys.path[0]}/photo_dump/ss_of_flop2.png", region=(1021, 902, 26, 33))
-		turn1_image_path = f"{sys.path[0]}/photo_dump/ss_of_flop1.png"
-		turn2_image_path = f"{sys.path[0]}/photo_dump/ss_of_flop2.png"
+		# VIDEO COORDINATES - check coordinates- they're not right; remove this comment after checking
+		pyautogui.screenshot(f"{sys.path[0]}/photo_dump/ss_of_turn1.png", region=(1022, 781, 30, 33))
+		pyautogui.screenshot(f"{sys.path[0]}/photo_dump/ss_of_turn2.png", region=(1021, 902, 26, 33))
+		turn1_image_path = f"{sys.path[0]}/photo_dump/ss_of_turn1.png"
+		turn2_image_path = f"{sys.path[0]}/photo_dump/ss_of_turn2.png"
 		# turn1_image_path = Image.open(f"{sys.path[0]}/photo_dump/ss_of_flop1.png")
 		# turn2_image_path = Image.open(f"{sys.path[0]}/photo_dump/ss_of_flop2.png")
 		# turn1_image_path.show()
@@ -252,47 +245,49 @@ class TheTurn(TheFlop):
 
 class TheRiver(TheTurn):
 
-	def add_river_card_num_and_suit_to_turn(self, turn):
+	def detect_river_nums_and_suit(self):
 		"""
-		Thinking ahead, I would still want the structure looking like this on the turn:
-		[[13, 'S'], [10, 'C'] [9, 'S'], [8, 'C']]
-
-		Because I will need to do computation for wrap and straights that involve all 4 cards.
-		e.g. to determine if there is a wrap or straight draw made on the turn.
+		Basically the same as the turn function above.
 		"""
-		pyautogui.screenshot(f"{sys.path[0]}/photo_dump/ss_of_river_card.png", region=(1125, 710, 32, 34))
-		cropped_im = Image.open(f"{sys.path[0]}/photo_dump/ss_of_river_card.png")
-		# cropped_im.show()
+		# VIDEO COORDINATES - check coordinates- they're not right; remove this comment after checking
+		pyautogui.screenshot(f"{sys.path[0]}/photo_dump/ss_of_river1.png", region=(1022, 781, 30, 33))
+		pyautogui.screenshot(f"{sys.path[0]}/photo_dump/ss_of_river2.png", region=(1021, 902, 26, 33))
+		river1_image_path = f"{sys.path[0]}/photo_dump/ss_of_river1.png"
+		river2_image_path = f"{sys.path[0]}/photo_dump/ss_of_river2.png"
+		# river1_image_path = Image.open(f"{sys.path[0]}/photo_dump/ss_of_flop1.png")
+		# river2_image_path = Image.open(f"{sys.path[0]}/photo_dump/ss_of_flop2.png")
+		# river1_image_path.show()
+		# river2_image_path.show()
 
 		# turn card num and suit detection
-		cropped_im.save(f"{sys.path[0]}/photo_dump/river_card.png")
-		cropped_im_path = f"{sys.path[0]}/photo_dump/river_card.png"
-		new_im = Image.open(cropped_im_path)
-		current_num = pytesseract.image_to_string(cropped_im, config='--psm 6')
-		# print(current_num)
+		river1_string = pytesseract.image_to_string(river1_image_path, config='--psm 6')
+		river2_string = pytesseract.image_to_string(river2_image_path, config='--psm 6')
 
-		river_num = current_num[0]  # could still be J, Q, K, A here
-		river_num = int(self.convert_j_q_k_a(river_num))
+		# here it looks like '6\n' or '10\n'
+		if river1_string[:2] == '10':
+			river1_num = '10'
+		else:
+			river1_num = river1_string[0]
+		if river2_string[:2] == '10':
+			river2_num = '10'
+		else:
+			river2_num = river2_string[0]
 
 		# get suit of the card
-		river_suit = TheFlop.determine_black_spades(cropped_im_path)
+		river1_suit = TheFlop.determine_black_spades(river1_string)
+		river2_suit = TheFlop.determine_black_spades(river2_string)
 
-		if not river_num or not river_suit:
-			print(f'Either the turn number {river_num} or turn suit: {river_suit} was not detected.')
-			breakpoint()  # leave this breakpoint here.
+		# common number recognition problems, try correct
+		river1_num = TheFlop.number_corrector(river1_num)
+		river2_num = TheFlop.number_corrector(river2_num)
+		# convert the river num to number if it is a face card
+		river1_num = self.convert_j_q_k_a(river1_num)
+		river2_num = self.convert_j_q_k_a(river2_num)
 
-		river_card = [river_num, river_suit]
-		turn.append(river_card)  # add both river num and suit to turn
-		river = turn  # then assign this new 'turn' with the two rivers cards to 'river'
+		turn1_card = [river1_num, river1_suit]
+		turn2_card = [river2_num, river2_suit]
 
-		river = TheFlop.number_corrector(river)
-		# convert the turn num to number if it is a face card
-		river = self.convert_j_q_k_a(river)
-
-		# sort the river in descending order according to nums
-		river = self.sort_turn_and_river_nums(river)
-
-		return river, river_num, river_suit
+		return turn1_card, turn2_card
 
 
 # x = TheFlop()

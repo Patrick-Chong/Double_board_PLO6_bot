@@ -118,6 +118,7 @@ class PreFlopHandCombinations:
                 double_suited_count += 1
         if double_suited_count > 1:
             return True
+        return False
 
     def high_pairs_in_my_hand(self):
         """
@@ -130,20 +131,24 @@ class PreFlopHandCombinations:
         for num in count_of_num:
             if int(num) >= 10 and count_of_num[num] > 1:
                 number_of_high_pairs += 1
-        if number_of_high_pairs == 1:
+        if number_of_high_pairs >= 1:
             return True
         else:
             return False
 
     def check_for_wrap_and_wrap_plus_pair(self):
         """
-        nums_list = [13,12,12,7,5,3]
+        This function will return two things:
+        1) if I have a 4 card wrap
+        2) if I have a 4 card wrap + pair
 
-        The only wraps I consider playing: [9, 8, 7], [9, 8, 6], [9, 7, 6], [9, 8, 5], [9, 6, 5]
+        nums_list = [13,12,12,7,5,3]
 
         (R)!!! WITH EPIPHANY AROUND WRAPS
         I won't play 3 cards wraps; they are weak.
         Only 4 or 5 cards wraps are strong enough.
+
+        The only wraps I consider playing: [9, 8, 7], [9, 8, 6], [9, 7, 6], [9, 8, 5], [9, 6, 5]
 
         Comparing 3 card wrap to 4 or 5 card wraps:
         9 8 7; 9 8 7
@@ -167,7 +172,8 @@ class PreFlopHandCombinations:
         filtered_num_list_take_out_pairs = [self.num_list[0]]
         for i in range(1, 5):
             if self.num_list[i] == self.num_list[i-1] or self.num_list[i] == self.num_list[i+1]:
-                pass
+                if self.num_list[i] not in filtered_num_list_take_out_pairs:
+                    filtered_num_list_take_out_pairs.append(self.num_list[i])
             else:
                 filtered_num_list_take_out_pairs.append(self.num_list[i])
         if self.num_list[-1] != filtered_num_list_take_out_pairs[-1]:
@@ -180,6 +186,7 @@ class PreFlopHandCombinations:
             all_combo_of_four.append(filtered_num_list_take_out_pairs[i:i+4])
             if len(filtered_num_list_take_out_pairs) - i == 4:
                 break
+
         # look if I have wrap and/or wrap plus pair in my hand
         any_wrap_in_my_hand = False
         is_wrap_plus_pair_in_my_hand = False
@@ -189,7 +196,7 @@ class PreFlopHandCombinations:
             difference_second_two_cards = combo[1] - combo[2]
             difference_third_two_cards = combo[2] - combo[3]
             total_difference = difference_first_two_cards + difference_second_two_cards + difference_third_two_cards
-            # 9 8 7 6 - no gap wrap
+            # 9 8 7 - no gap wrap
             if difference_first_two_cards == 1 and difference_second_two_cards == 1 and difference_third_two_cards == 1:
                 is_wrap_in_my_hand = True
             # 9 7 6 5 - one gap wraps
@@ -300,9 +307,9 @@ class ShouldWePlayThisPreFlopHand(PreFlopHandCombinations):
         """
         pillars_of_a_strong_starting_hand = dict()
         pillars_of_a_strong_starting_hand['high_cards'] = self.at_least_four_high_cards
-        pillars_of_a_strong_starting_hand['suited'] = [self.single_suited_ace_f, self.single_suited_king_f]
+        pillars_of_a_strong_starting_hand['suited'] = [self.single_suited_ace_f or self.single_suited_king_f]
         pillars_of_a_strong_starting_hand['pair'] = self.high_pair_in_my_hand_f
-        pillars_of_a_strong_starting_hand['running'] = [self.wrap_no_pair, self.wrap_plus_pair]
+        pillars_of_a_strong_starting_hand['running'] = [self.wrap_no_pair or self.wrap_plus_pair]
         number_of_pillars_met = 0
         for pillar in pillars_of_a_strong_starting_hand.values():
             if isinstance(pillar, list):
@@ -313,7 +320,6 @@ class ShouldWePlayThisPreFlopHand(PreFlopHandCombinations):
                     number_of_pillars_met += 1
         if number_of_pillars_met < 3:
             return False
-
         return True
 
     def double_suited_aces(self):
@@ -408,7 +414,7 @@ def scan_call_button_to_see_bet_amount():
     final_bet_amount = read_white_text_on_image(image_path, ss)
     print(f'bet to call detected is:{final_bet_amount}')
 
-    return final_bet_amount
+    return float(final_bet_amount)
 
 
 class RunPreFlop(ShouldWePlayThisPreFlopHand):
@@ -437,8 +443,6 @@ class RunPreFlop(ShouldWePlayThisPreFlopHand):
             return 'bet'
         elif 4 * self.big_blind < self.pre_flop_bet_amount <= 10 * self.big_blind:
             return 'three_bet'
-        elif self.pre_flop_bet_amount > 10 * self.big_blind:
-            return 'four_bet'
         else:
             print(f"Issue with limped bet or three bet detection, pre_flop bet size detected is {self.pre_flop_bet_amount}")
             breakpoint()

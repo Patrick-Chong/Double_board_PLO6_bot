@@ -11,7 +11,7 @@ Two people can have nut straight but two people cannot have nut flush; the latte
 Coding steps to gather above information:
 - organise river cards into the turn
 1. Check if I have absolute coconuts on either board or nut nut on either board; if so easy bet
-To do this, just like on turn I'll need to code out, board pair, flush completed, straight completed. No need to check for draws thankfully.
+To do this, just like on turn I'll need to code out, board pair, flush completed, straight completed. No need to check for draws.
 2. My action on turn should be passed on in action_on_turn
 3. Create function to check if nuts changes on either boards; particularly if flushes got there
 This is important because if opp bet on turn and river changed and he check and we are heads up, I'll bet regardless.
@@ -36,39 +36,33 @@ class AnalyseMyHandOnRiver(AnalyseMyHandOnTurn):
                                      positions_of_players_to_act_ahead_of_me,
                                      pot_size, my_position, num_list, suit_list, big_blind)
 
-        self.organise_river_f = self.organise_river()
-        self.river = self.organise_river_f[0]
-        self.river_num = self.organise_river_f[1]
-        self.river_suit = self.organise_river_f[2]
+        self.river1, self.river2 = self.organise_river()
         self.positions_of_players_to_act_ahead_of_me_f = positions_of_players_to_act_ahead_of_me
 
-        # self.river = [[10, 'S'], [8, 'C'], [8, 'H'], [6, 'S'], [2, 'C']]
-        # self.river_num = 10
-        # self.river_suit = 'S'
-
-        # check if there are any completed straights on the river - simple check
-        self.any_straight_completed_on_river_f = self.any_straight_completed_on_river()
-        self.did_any_straight_complete_on_river = self.any_straight_completed_on_river_f[0]
-        self.three_cards_combis_that_make_straight_on_river = self.any_straight_completed_on_river_f[1]
-
-        # Considers if straight is made on turn if river changes nuts or if no straight on turn if river completed any straights
-        # and it returns all the 2 card combinations that complete those straights.
-        self.all_two_card_combis_completing_straights_on_river = self.did_river_complete_any_straights_or_change_nuts_of_completed_straights()
-
-        # check if flush completed on river, and the suit of the flush if so
-        self.flush_complete_on_river = self.flush_completed_on_river()
-        self.did_flush_complete_on_river = self.flush_complete_on_river[0]
-        self.nut_flush_nums_river = self.flush_complete_on_river[1]  # N.B. This is not the largest nums of the flush on the board; e.g. [14, 13, 10, 2] all hearts; then this would be 12 of hearts.
-        self.suit_of_flush_river = self.flush_complete_on_river[2]
-
-        # check if I hit a flush on river; if I did, return the number of the highest flush card otherwise return False if I do not have the flush
-        self.my_highest_num_of_the_completed_flush_on_river = self.did_I_hit_flush_on_river(self.river_suit)
-
-        # check if I hit the nut straight or any straight on river
-        self.did_I_hit_straight_on_river_f = self.did_I_hit_straight_on_river()
-
-        # check if the board paired on the river - this will simply return True or False
-        self.did_board_pair_on_river_f = self.did_board_pair_on_river()
+        # Check what is available to hit on the turn - copied the below straight from the turn
+        # Did board pair
+        self.did_board_pair_on_turn_generator = AnalyseMyHandOnTurn.did_board_pair_on_turn(self.turn1)
+        self.did_board_pair_on_turn1 = self.did_board_pair_on_turn_generator[0]
+        self.board_pair_top_card_turn1 = self.did_board_pair_on_turn_generator[1]
+        self.did_board_pair_on_turn_generator = AnalyseMyHandOnTurn.did_board_pair_on_turn(self.turn2)
+        self.did_board_pair_on_turn2 = self.did_board_pair_on_turn_generator[0]
+        self.board_pair_top_card_turn2 = self.did_board_pair_on_turn_generator[1]
+        # Did flush complete
+        self.flush_complete_on_turn = AnalyseMyHandOnTurn.flush_completed_on_turn(self.turn1)
+        self.did_flush_completed_on_turn1 = self.flush_complete_on_turn[0]
+        self.nut_flush_nums_turn1 = self.flush_complete_on_turn[1]
+        self.nut_flush_suit_turn1 = self.flush_complete_on_turn[2]
+        self.flush_complete_on_turn = AnalyseMyHandOnTurn.flush_completed_on_turn(self.turn2)
+        self.did_flush_completed_on_turn2 = self.flush_complete_on_turn[0]
+        self.nut_flush_nums_turn2 = self.flush_complete_on_turn[1]
+        self.nut_flush_suit_turn2 = self.flush_complete_on_turn[2]
+        # Did straight complete
+        self.any_straight_completed_on_turn_generator = AnalyseMyHandOnTurn.any_straight_completed_on_turn(self.turn1)
+        self.did_straight_complete_on_turn1 = self.any_straight_completed_on_turn_generator[0]
+        self.two_card_combi_completing_straight_on_turn1 = self.any_straight_completed_on_turn_generator[1]
+        self.any_straight_completed_on_turn_generator = AnalyseMyHandOnTurn.any_straight_completed_on_turn(self.turn2)
+        self.did_straight_complete_on_turn2 = self.any_straight_completed_on_turn_generator[0]
+        self.two_card_combi_completing_straight_on_turn2 = self.any_straight_completed_on_turn_generator[1]
 
     def any_straight_completed_on_river(self):
         """
@@ -148,100 +142,101 @@ class AnalyseMyHandOnRiver(AnalyseMyHandOnTurn):
 
         return 'I_dont_have_straight'
 
-    def did_board_pair_on_river(self):
-        """
-        This function will return True if the river card paired the board.
-        """
-        turn_nums = [card[0] for card in self.turn]
-        if self.river_num in turn_nums:
-            return True
-        return False
-
     def organise_river(self):
         """
-        turn will look like: [[13, 'S'], [10, 'C'], [9, 'S'], [8, 'C']] ; after we sort it.
+        river will look like: [[13, 'S'], [10, 'C'], [9, 'S'], [8, 'C'], [2, 'C] ; after we sort it.
         """
-        river_generator = TR.add_river_card_num_and_suit_to_turn(self.turn)  # all we need to do here is to sort by number as we want the turn nums to still be in descending order
-        river = river_generator[0]
-        river_num = river_generator[1]
-        river_suit = river_generator[2]
+        river1_card, river2_card = TR.detect_river_nums_and_suit()
 
-        return river, river_num, river_suit
+        # TO DO: add a breakpoint here when running integration test and check if self.flop and self.turn is correct,
+        # previously self.flop was incorrect in this position; delete this funciton once checked.
+        river1 = self.turn1 + [river1_card]
+        river2 = self.turn2 + [river2_card]
 
-    def analyse_final_check_on_river(self, flopped, card_helper):
+        # Sort the turn cards with flop so everything is in descending order
+        river1 = sorted(river1, key=lambda x: x[0], reverse=True)  # Sorting from largest to smallest, hence reverse=True
+        river2 = sorted(river2, key=lambda x: x[0], reverse=True)  # Sorting from largest to smallest, hence reverse=True
+
+        return river1, river2
+
+    # copied below function straight from turn
+    def analyse_my_hand_against_river(self, action_on_flop=None, extra_information=None):
         """
-        This final check will as usual check the 3 main things that all main hands will check;
-        1) did the board pair on river
-        2) did a flush draw complete on the river
-        3) did a straight complete and do I have the nut straight
-        ** TO DO: when I write more main hands - consider just doing a function where the above 3 are checked
-        rather than writing it out at the start of every hand.
-        For MVP never mind, stick with this.
+        action_on_flop will be 'BET' or 'CALL' - tells us what we did on the flop; who aggressor was on last street.
 
-        Then it will continue all the hand from final_check on the turn.
-        """
-        pass
+        It's quite important to know on the turn in general the SPR of the person who bet and anyone who called.
+        Because if it is small, then a fold should be a call many times.
 
+        Another thing to consider is that if board is paired, there's no need to run through
+        straight or flush or draws functions, as they will be void.
+        With this in mind it makes sense to pass it in a certain order and if something like a paired
+        board is detected, stop passing and can return there.
+        Order to check things on turn:
+        1) did board pair -                  self.hand_ratings_turn1['board_paired']
+        2) did flush complete -              self.hand_ratings_turn1['made_flush']
+        3) did straight complete-            self.hand_ratings_turn1['made_straight']
+        4) Combo draws -                     self.hand_ratings_turn1['combo_draw']
+        5) two pair no st8/flush/board pair- self.hand_ratings_turn1['dry_two_pair']
 
+        Ratings and what they mean:
+        7 : the absolute coconuts - e.g. quads
+        6.5: coconuts but only blast if I have something good on other hand, as coconuts can change (e.g. top set)
+        6:  very close to the coconuts - e.g. house with overhouse available, or middle set.
+        5.5: strongish - e.g. top two pair on board with no flush or straight made; or bottom set
+        4:  something non nutted- e.g. lower house or lower straight
 
+        Strategy of play with ratings:
+        - 7 bet regardless of other hand
+        - 6.5 + 6 bet
+        - 6.5 + lower ; call a bet or bet if not bet
+        - 6 and 6 bet if not bet otherwise call
+        - Check fold anything less
 
-    def flush_completed_on_turn_play_river_exploit(self, flopped, card_helper):
-        """EXPLOIT"""
-        lowest_spr = 10000
-        for stack in self.stack_tracker:
-            if stack:
-                stack = float(stack)
-                pot_size = float(self.pot_size)
-                current_spr = stack/pot_size
-                lowest_spr = min(current_spr, lowest_spr)
-
-        if not self.guy_to_right_bet_size:
-            # add randomiser, but I think lean towards folding as most would call river if they call turn with flush unless
-            # they are pulling for house, so in any case, only worth betting 3/4
-            if lowest_spr >= 2:
-                return 'BET', 'betting river after flush completed on turn', 'bet river'
-
-
-
-
-    def analyse_my_hand_against_river(self, action_on_turn, extra_information=None):
-        """
-        (R)!!!!!
-        At the start of every main hand you MUST check
-        1) did the board pair
-        2) did a flush complete
-        3) did a straight complete, and do I have the nut straight
-        if 1) or 2) is True then coded a separate function to guide the play strategy.
-        For 3), just check if straight got there and if so, to bet if I have the nut straight. Otherwise, other
-        straight scenarios will be covered in the main hand.
-
-        Doing the above check at the start will make your life 100% easier as you code out the possibilities of each hand.
-
-        To make my life easier, it's also worth checking if I have the nut straight draw on the river and the board isn't paired and no flush
-        because then I can comfortably get it all in. I might miss this in the main hand sometimes, because of all the complicated scenario -
-        having this check makes it that much easier to play.
-
-        N.B. if I do the above, I do not need to code as many scenarios over and over again,
-        e.g. if I am drawing to the nut flush; then I won't need to repeatedly code the scenario if the flush got there on the
-        river as it is taken care of at the start of the function.
-        -------------------------------------------------------------
-
-        flop_action will be 'BET' or 'CALL' - tells us what we did on the flop
-
-        card_helper is a dict() that holds what we flopped as the key, and helper cards as the values.
-        e.g. ... card_helper('flopped_straight_draw': (9,7), 'flopped_wrap': (10,9,7), 'flopped_set': 'flopped_top_set', 'SPR_low': True)
-
-        All possible keys for card_helper:
-        1. flopped_straight_draw
-        2. flopped_wrap
-        3. flopped_set
-        4. SPR_low
-        5. flopped_nut_flush_draw
-        6. flopped_nut_flush
+        The 6.5 created for a made straight, but on it's own not good enough cos other might have it too.
+        So need to consider other board to determine if I should bet/raise or not.
+        It will also be used on board where I have top set and no flush or straight completed.
+        On a draw heavy board multiway, this is not ideal to blast unless I have something else on other board.
         """
 
-        if self.guy_to_right_bet_size <=7:
-            return 'call'
-        if self.guy_to_right_bet_size == 0:
-            return 'check'
-        return 'fold'
+        # Fill out my hand ratings based on what is on board and what I have
+        self.is_board_paired_on_turn()
+        self.two_pair_no_flush_or_straight_completed()
+        self.is_flush_completed_on_turn()
+        self.is_straight_completed_on_turn()
+        self.combo_draw()
+
+        # Add logic here to check both my hand ratings and then return 'BET', 'CALL' or 'FOLD'.
+        hand_rating_on_turn1 = max(self.hand_ratings_turn1.values())
+        hand_rating_on_turn2 = max(self.hand_ratings_turn2.values())
+
+        # STRATEGY FOR MY PLAY:
+        # For now I'll ignore SPR for check raising. When I record my plays; much easier to identify where I can go for check raises;
+        action_behind_me = self.check_bet_three_bet()  # 'check', 'bet', 'three_bet'
+        if hand_rating_on_turn1 == 7 or hand_rating_on_turn2 == 7:
+            return 'BET'
+        if (hand_rating_on_turn1 == 6.75 and hand_rating_on_turn2 >= 5.5) or (hand_rating_on_turn2 == 6.75 and hand_rating_on_turn1 >= 5.5):
+            return 'BET'
+        if (hand_rating_on_turn1 == 6.5 and hand_rating_on_turn2 == 6) or (hand_rating_on_turn2 == 6.5 and hand_rating_on_turn1 == 6):
+            return 'BET'
+        if (hand_rating_on_turn1 == 6.5 and hand_rating_on_turn2 < 6) or (hand_rating_on_turn2 == 6.5 and hand_rating_on_turn1 < 6):
+            if not self.guy_to_right_bet_size:
+                return 'BET'
+            else:
+                # Consider SPR here? What if guy is going call in, still call? I think so.
+                return 'CALL'
+        # Think about adding more cases to call, when I am in position and no one to act ahead of me - especilly heads up.
+        # or even non-heads up but I am in position (exploit) - like the chinese guy does all the time, blasts when:
+        # he has position + nuts changed on river + checked to him.
+        # (I believe I noticed he doesn't do it on baords where straight completed but more closed like flush completing or board pairing).
+
+        if action_behind_me == 'check':
+            return 'CALL'
+        else:
+            return 'FOLD'
+
+        # For testing the flow of code vs. real app, comment out all of the above, and comment in all of below:
+        # if self.guy_to_right_bet_size <= 3:
+        #     return 'CALL'
+        # if self.guy_to_right_bet_size == 0:
+        #     return 'CALL'
+        # return 'FOLD'

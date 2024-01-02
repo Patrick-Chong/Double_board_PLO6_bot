@@ -126,8 +126,8 @@ def run_new_hand():
 			print(f'waiting for my turn to act, we are on street {street_we_are_on}')
 		street_we_are_on = ftr.determine_street()
 		action, extra_information, current_street = go_to_the_right_street(action, street_we_are_on, extra_information, street_count)
-		# Check if we are in a new hand; by checking if running num_list function again shows a new hand or not
-		if action == 'fold':
+		# Check if we are in a new hand; do this by running num_list function again and see if it shows a new hand
+		if action == 'FOLD':
 			break
 		if current_street > 0 and street_we_are_on == 'pre_flop':
 			run_num_list_suit_list_generator = rfot.run_num_list_suit_list()
@@ -143,7 +143,7 @@ while True:
 	# scans this, then it has issues - only will happen when running against video because against real thing nothing will cover your cards
 	# but in video when you hover over the screen something pops up.
 
-	while check_if_my_cards_are_live():  # checked if I have folded - if so no need to run anything
+	while check_if_my_cards_are_live():
 		print('we are in a live hand')
 		# generate static information
 		my_position = rfot.take_SS_and_determine_position()

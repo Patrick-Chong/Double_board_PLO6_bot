@@ -110,7 +110,7 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
         turn will look like: [[13, 'S'], [10, 'C'], [9, 'S'], [8, 'C']] ; after we sort it.
         """
         turn1_card, turn2_card = TT.detect_turn_nums_and_suit()
-        # TO DO: add a breakpoint here when running integration test and check if self.flop is correct, prviously
+        # TO DO: add a breakpoint here when running integration test and check if self.flop is correct, previously
         # it got messed up and it took the value of the turn and I couldn't figure out why.
         # Add both turn cards to the flops
 
@@ -671,7 +671,7 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
         self.is_straight_completed_on_turn()
         self.combo_draw()
 
-        # Add logic here to check both my hand ratings and then return 'bet', 'call', 'check' or 'fold'.
+        # Add logic here to check both my hand ratings and then return 'BET', 'CALL' or 'FOLD'.
         hand_rating_on_turn1 = max(self.hand_ratings_turn1.values())
         hand_rating_on_turn2 = max(self.hand_ratings_turn2.values())
 
@@ -702,7 +702,7 @@ class AnalyseMyHandOnTurn(AnalyseMyHandOnFlop):
 
         # For testing the flow of code vs. real app, comment out all of the above, and comment in all of below:
         # if self.guy_to_right_bet_size <= 3:
-        #     return 'call'
+        #     return 'CALL'
         # if self.guy_to_right_bet_size == 0:
-        #     return 'check'
-        # return 'fold'
+        #     return 'CALL'
+        # return 'FOLD'

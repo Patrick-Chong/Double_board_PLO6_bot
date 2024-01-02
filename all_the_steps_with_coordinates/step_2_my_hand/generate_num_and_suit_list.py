@@ -58,7 +58,7 @@ def determine_black_SPADES(card_number):
 	So I will use a count for the number of dispersions higher than a certain number to determine
 	if we have a black card.
 	"""
-	image = Image.open(f"{sys.path[0]}/photo_dump/six_individ_cards_for_num/card{card_number}.png", "r")
+	image = Image.open(f"{sys.path[0]}/photo_dump/card{card_number}.png", "r")
 	pixels = list(image.getdata())
 
 	differences = []
@@ -100,7 +100,7 @@ def determine_suit_Clubs_Hearts_Diamonds(card_number):
 	if it is one of red, blue or green the difference is quite large.
 	"""
 
-	image = Image.open(f"{sys.path[0]}/photo_dump/six_individ_cards_for_num/card{card_number}.png", "r")
+	image = Image.open(f"{sys.path[0]}/photo_dump/card{card_number}.png", "r")
 	pixels = list(image.getdata())
 
 	R_pixels = []
@@ -148,9 +148,8 @@ def generate_suit_list_from_my_hand():
 
 		# if i == 5:
 		# 	cropped_im.show()
-		# 	breakpoint()
-		cropped_im.save(f"{sys.path[0]}/photo_dump/six_individ_cards_for_num/card{i+1}.png")
-		cropped_im = Image.open(f"{sys.path[0]}/photo_dump/six_individ_cards_for_num/card{i+1}.png")
+		cropped_im.save(f"{sys.path[0]}/photo_dump/card{i+1}.png")
+		cropped_im = Image.open(f"{sys.path[0]}/photo_dump/card{i+1}.png")
 		resized_im = cropped_im.resize((65, 60))
 
 	return collect_card_suit()

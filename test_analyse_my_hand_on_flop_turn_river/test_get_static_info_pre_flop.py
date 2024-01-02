@@ -13,9 +13,12 @@ from get_static_info_pre_flop import RunFirstOneTime
 
 
 class TestRunFirstOneTime:
+    # Below takes 4 seconds to run, with table blinds slightly hacked.
     def test_how_long_it_takes_to_run_static_information(self):
         """
         To run this TEST, need to have the real pokerbros open, and in the right position!
+
+        Can run this on single board table - just the blinds that won't be detected correctly.
         """
         start_time = time.time()
         rfot = RunFirstOneTime()
@@ -32,3 +35,4 @@ class TestRunFirstOneTime:
         print(f'type of big_blind is: {type(big_blind)} and the value is: {big_blind}')
         end_time = time.time()
         print(f'The total time it takes to run static information is {round(end_time-start_time)} seconds')
+
